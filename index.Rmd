@@ -1,0 +1,116 @@
+---
+output:
+  revealjs::revealjs_presentation:
+    controls: false
+    progress: false
+    center: true
+    transition: "none"
+---
+
+```{r include=FALSE, cache=FALSE}
+knitr::opts_chunk$set(cache=FALSE,
+                      echo=FALSE, results="hide",
+                      message=FALSE, warning=FALSE)
+```
+
+## Adaptive priors for genomic data analysis
+
+[Michael Love](http://mikelove.github.io) <br>
+[\@mikelove](http://twitter.com/mikelove) <br>
+
+this talk: http://mikelove.github.io/adaptprior
+
+---
+
+## Work in collaboration with
+
+* Anqi Zhu (UNC-CH)
+* Joseph Ibrahim (UNC-CH)
+
+---
+
+## Why prior for genomic data
+
+```{r}
+suppressPackageStartupMessages(library(DESeq2))
+m <- 10
+n <- 2500
+dmr <- function(x) 4/x + exp(rnorm(n,log(.01),2))
+set.seed(1)
+dds <- makeExampleDESeqDataSet(m=m, n=n, betaSD=.5,
+                               interceptMean=5, interceptSD=4,
+                               dispMeanRel=dmr)
+keep <- rowSums(counts(dds) >= 5) >= 3
+keep <- keep & rowMeans(counts(dds)) < 1e4
+dds <- dds[keep,]
+dds <- DESeq(dds)
+grp1 <- rowMeans(counts(dds)[,1:(m/2)])
+grp2 <- rowMeans(counts(dds)[,(m/2 + 1):m])
+```
+
+```{r ma}
+dat <- data.frame(log10mean=log10(.5 * (grp1 + grp2)),
+                  log2FC=log2(grp2/grp1),
+                  pc1=log2(grp2+1) - log2(grp1+1),
+                  pc5=log2(grp2+5) - log2(grp1+5),
+                  true=mcols(dds)$trueBeta)
+dat$category <- factor(ceiling(dat$log10mean))
+levels(dat$category) <- c("<10","<100","<1,000","<10,000")
+library(ggplot2)
+ggplot(dat, aes(x=log10mean, y=log2FC, col=category)) +
+  geom_point(alpha=.3,size=2) +
+  ylim(-5,5) + geom_hline(yintercept=0, col="red")
+```
+
+---
+
+## Estimate over truth
+
+```{r scatter}
+ggplot(dat, aes(x=true, y=log2FC, col=category)) + geom_point(alpha=.3,size=2) +
+  geom_abline(intercept=0, slope=1, col="red") + ylim(-3,3)
+```
+
+---
+
+## Log2FC faceted by mean
+
+```{r facet}
+ggplot(dat, aes(x=true, y=log2FC, col=category)) + geom_point(alpha=.3,size=2) +
+  geom_abline(intercept=0, slope=1, col="red") + facet_wrap(~category) + ylim(-3,3)
+```
+
+---
+
+## Add pseudocount 1
+
+```{r facet1}
+yvar <- "pc1"
+ggplot(dat, aes_string(x="true", y=yvar, col="category")) +
+  geom_point(alpha=.3,size=2) +
+  geom_abline(intercept=0, slope=1, col="red") +
+  facet_wrap(~category) + ylim(-3,3)
+```
+
+---
+
+## Add pseudocount 5
+
+```{r facet5}
+yvar <- "pc5"
+ggplot(dat, aes_string(x="true", y=yvar, col="category")) +
+  geom_point(alpha=.3,size=2) +
+  geom_abline(intercept=0, slope=1, col="red") +
+  facet_wrap(~category) + ylim(-3,3)
+```
+
+---
+
+## Altogether, pseudocount 5
+
+```{r scatter5}
+ggplot(dat, aes(x=true, y=pc5, col=category)) + geom_point(alpha=.3,size=2) +
+  geom_abline(intercept=0, slope=1, col="red") + ylim(-3,3)
+```
+
+
