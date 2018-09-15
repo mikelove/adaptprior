@@ -5,13 +5,17 @@ output:
     progress: false
     center: true
     transition: "none"
+    self_contained: false
 ---
 
-```{r include=FALSE, cache=FALSE}
-knitr::opts_chunk$set(cache=FALSE,
-                      echo=FALSE, results="hide",
-                      message=FALSE, warning=FALSE)
-```
+<style>
+.container{
+    display: flex;
+}
+.col{
+    flex: 1;
+}
+</style>
 
 ## Adaptive priors for genomic data analysis
 
@@ -19,6 +23,12 @@ knitr::opts_chunk$set(cache=FALSE,
 [\@mikelove](http://twitter.com/mikelove) <br>
 
 this talk: http://mikelove.github.io/adaptprior
+
+```{r include=FALSE, cache=FALSE}
+knitr::opts_chunk$set(cache=FALSE,
+                      echo=FALSE, results="hide",
+                      message=FALSE, warning=FALSE)
+```
 
 ---
 
@@ -44,6 +54,7 @@ keep <- rowSums(counts(dds) >= 5) >= 3
 keep <- keep & rowMeans(counts(dds)) < 1e4
 dds <- dds[keep,]
 dds <- DESeq(dds)
+normal <- lfcShrink(dds, coef=2, type="normal")$log2FoldChange
 grp1 <- rowMeans(counts(dds)[,1:(m/2)])
 grp2 <- rowMeans(counts(dds)[,(m/2 + 1):m])
 ```
@@ -53,13 +64,18 @@ dat <- data.frame(log10mean=log10(.5 * (grp1 + grp2)),
                   log2FC=log2(grp2/grp1),
                   pc1=log2(grp2+1) - log2(grp1+1),
                   pc5=log2(grp2+5) - log2(grp1+5),
+                  normal=normal,
                   true=mcols(dds)$trueBeta)
 dat$category <- factor(ceiling(dat$log10mean))
 levels(dat$category) <- c("<10","<100","<1,000","<10,000")
 library(ggplot2)
+big.text <- theme(axis.text=element_text(size=14),
+                  axis.title=element_text(size=18),
+                  legend.text=element_text(size=14),
+                  legend.title=element_text(size=16))
 ggplot(dat, aes(x=log10mean, y=log2FC, col=category)) +
   geom_point(alpha=.3,size=2) +
-  ylim(-5,5) + geom_hline(yintercept=0, col="red")
+  ylim(-5,5) + geom_hline(yintercept=0, col="black") + big.text
 ```
 
 ---
@@ -68,7 +84,8 @@ ggplot(dat, aes(x=log10mean, y=log2FC, col=category)) +
 
 ```{r scatter}
 ggplot(dat, aes(x=true, y=log2FC, col=category)) + geom_point(alpha=.3,size=2) +
-  geom_abline(intercept=0, slope=1, col="red") + ylim(-3,3)
+  geom_abline(intercept=0, slope=1, col="black") +
+  ylim(-3,3) + big.text
 ```
 
 ---
@@ -77,40 +94,77 @@ ggplot(dat, aes(x=true, y=log2FC, col=category)) + geom_point(alpha=.3,size=2) +
 
 ```{r facet}
 ggplot(dat, aes(x=true, y=log2FC, col=category)) + geom_point(alpha=.3,size=2) +
-  geom_abline(intercept=0, slope=1, col="red") + facet_wrap(~category) + ylim(-3,3)
+  geom_abline(intercept=0, slope=1, col="black") + facet_wrap(~category) +
+  ylim(-3,3) + big.text
 ```
 
 ---
 
-## Add pseudocount 1
+## Pseudocount 1
 
 ```{r facet1}
 yvar <- "pc1"
 ggplot(dat, aes_string(x="true", y=yvar, col="category")) +
   geom_point(alpha=.3,size=2) +
-  geom_abline(intercept=0, slope=1, col="red") +
-  facet_wrap(~category) + ylim(-3,3)
+  geom_abline(intercept=0, slope=1, col="black") +
+  facet_wrap(~category) + ylim(-3,3) + big.text
 ```
 
 ---
 
-## Add pseudocount 5
+## Pseudocount 5
 
 ```{r facet5}
 yvar <- "pc5"
 ggplot(dat, aes_string(x="true", y=yvar, col="category")) +
   geom_point(alpha=.3,size=2) +
-  geom_abline(intercept=0, slope=1, col="red") +
-  facet_wrap(~category) + ylim(-3,3)
+  geom_abline(intercept=0, slope=1, col="black") +
+  facet_wrap(~category) + ylim(-3,3) + big.text
 ```
 
 ---
 
-## Altogether, pseudocount 5
+## Normal prior
+
+```{r facetNormal}
+yvar <- "normal"
+ggplot(dat, aes_string(x="true", y=yvar, col="category")) +
+  geom_point(alpha=.3,size=2) +
+  geom_abline(intercept=0, slope=1, col="black") +
+  facet_wrap(~category) + ylim(-3,3) + big.text
+```
+
+---
+
+## Pseudocount 5
 
 ```{r scatter5}
 ggplot(dat, aes(x=true, y=pc5, col=category)) + geom_point(alpha=.3,size=2) +
-  geom_abline(intercept=0, slope=1, col="red") + ylim(-3,3)
+  geom_abline(intercept=0, slope=1, col="black") + ylim(-3,3) + big.text
 ```
 
+## Normal prior
+
+```{r scatterNormal}
+ggplot(dat, aes(x=true, y=normal, col=category)) + geom_point(alpha=.3,size=2) +
+  geom_abline(intercept=0, slope=1, col="black") + ylim(-3,3) + big.text
+```
+
+## What do we see
+
+<div class="container">
+
+<div class="col">
+<img width=400 src="index_files/figure-revealjs/scatterNormal-1.png">
+</div>
+
+<div class="col">
+<br/>
+
+* Reduced variance
+* Genes can be ranked
+* Moderate bias
+
+</div>
+</div>
 
