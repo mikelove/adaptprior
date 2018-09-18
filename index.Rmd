@@ -1,4 +1,6 @@
 ---
+title: "Adaptive priors for genomic data"
+author: Michael Love
 output:
   revealjs::revealjs_presentation:
     controls: false
@@ -8,6 +10,19 @@ output:
     self_contained: false
 ---
 
+## Work in collaboration with
+
+* Anqi Zhu (UNC-CH)
+* Joseph Ibrahim (UNC-CH)
+
+This talk: [mikelove.github.io/adaptprior](https://mikelove.github.io/adaptprior)
+
+```{r include=FALSE, cache=FALSE}
+knitr::opts_chunk$set(cache=FALSE,
+                      echo=FALSE, results="hide",
+                      message=FALSE, warning=FALSE)
+```
+
 <style>
 .container{
     display: flex;
@@ -16,26 +31,6 @@ output:
     flex: 1;
 }
 </style>
-
-## Adaptive priors for genomic data analysis
-
-[Michael Love](http://mikelove.github.io) <br>
-[\@mikelove](http://twitter.com/mikelove) <br>
-
-this talk: http://mikelove.github.io/adaptprior
-
-```{r include=FALSE, cache=FALSE}
-knitr::opts_chunk$set(cache=FALSE,
-                      echo=FALSE, results="hide",
-                      message=FALSE, warning=FALSE)
-```
-
----
-
-## Work in collaboration with
-
-* Anqi Zhu (UNC-CH)
-* Joseph Ibrahim (UNC-CH)
 
 ---
 
