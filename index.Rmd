@@ -17,10 +17,10 @@ output:
 
 This talk: [mikelove.github.io/adaptprior](https://mikelove.github.io/adaptprior)
 
-```{r include=FALSE, cache=FALSE}
-knitr::opts_chunk$set(cache=FALSE,
-                      echo=FALSE, results="hide",
-                      message=FALSE, warning=FALSE)
+```{r include=FALSE}
+knitr::opts_chunk$set(cache=TRUE,
+  echo=FALSE, results="hide",
+  message=FALSE, warning=FALSE)
 ```
 
 <style>
@@ -32,9 +32,51 @@ knitr::opts_chunk$set(cache=FALSE,
 }
 </style>
 
----
+## Aims and activity of the [Love lab](https://mikelove.github.io)
 
-## Why prior for genomic data
+<img height=100 src="rlogo.png"> <img height=100 src="bioconductorlogo.jpg">
+
+* Robust, extensible software for genomic data science
+* Statistical method development
+* Reproducible research and workflows
+* Collaborations: Genetics, Biology, CS, Statistics
+
+## Our starting point
+
+* In genomic data analysis, we often begin with plots
+* Crucial for high dimensional analysis:
+    - effect size over mean
+	- within-group variance over mean
+	- systematic variation (boxplots, PCA)
+
+## Gene expression
+
+* Many collaborations around gene expression:
+    - adipose tissue (T2D)*
+	- progenitor neurons (autism, schizophrenia)*
+	- colon (IBD)*
+	- macrophage (arthritis)*
+	- breast tumor
+    - upper airway and lung (HIV)
+* Often, a *counting* technology
+    - Sequencing of cDNA fragments
+	- Nanostring
+	
+\* also interested in chromatin accessibility or structure
+
+## Often, interest in log fold change 
+
+Expression of $g$ genes, 5 replicates in 2 groups:
+
+$[X_{g1}, \dots, X_{g5}]$ vs. $[Y_{g1}, \dots, Y_{g5}]$
+
+$$ E(X_{gi}) = \mu_{gX} $$
+
+$$ E(Y_{gi}) = \mu_{gY} $$
+
+$$ \beta_g \equiv \log_2 \left( \frac{\mu_{gY}}{\mu_{gX}} \right) $$
+
+## Effect size over mean ("MA" or Bland-Altman)
 
 ```{r}
 suppressPackageStartupMessages(library(DESeq2))
@@ -73,8 +115,6 @@ ggplot(dat, aes(x=log10mean, y=log2FC, col=category)) +
   ylim(-5,5) + geom_hline(yintercept=0, col="black") + big.text
 ```
 
----
-
 ## Estimate over truth
 
 ```{r scatter}
@@ -83,17 +123,13 @@ ggplot(dat, aes(x=true, y=log2FC, col=category)) + geom_point(alpha=.3,size=2) +
   ylim(-3,3) + big.text
 ```
 
----
-
-## Log2FC faceted by mean
+## Faceted by mean
 
 ```{r facet}
 ggplot(dat, aes(x=true, y=log2FC, col=category)) + geom_point(alpha=.3,size=2) +
   geom_abline(intercept=0, slope=1, col="black") + facet_wrap(~category) +
   ylim(-3,3) + big.text
 ```
-
----
 
 ## Pseudocount 1
 
@@ -105,8 +141,6 @@ ggplot(dat, aes_string(x="true", y=yvar, col="category")) +
   facet_wrap(~category) + ylim(-3,3) + big.text
 ```
 
----
-
 ## Pseudocount 5
 
 ```{r facet5}
@@ -117,8 +151,6 @@ ggplot(dat, aes_string(x="true", y=yvar, col="category")) +
   facet_wrap(~category) + ylim(-3,3) + big.text
 ```
 
----
-
 ## Normal prior
 
 ```{r facetNormal}
@@ -128,8 +160,6 @@ ggplot(dat, aes_string(x="true", y=yvar, col="category")) +
   geom_abline(intercept=0, slope=1, col="black") +
   facet_wrap(~category) + ylim(-3,3) + big.text
 ```
-
----
 
 ## Pseudocount 5
 
