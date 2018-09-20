@@ -67,7 +67,7 @@ knitr::opts_chunk$set(cache=TRUE,
 
 ## Often, interest in log fold change 
 
-Expression of $g$ genes, 5 replicates in 2 groups:
+Expression of $G$ genes, 5 replicates in 2 groups:
 
 $$[X_{g1}, \dots, X_{g5}] \quad \textrm{vs} \quad [Y_{g1}, \dots, Y_{g5}]$$
 
@@ -206,6 +206,22 @@ ggplot(dat, aes(x=true, y=normal, col=category)) + geom_point(alpha=.3,size=2) +
 
 </div>
 </div>
+
+## Simplify statistical routines
+
+```{r echo=TRUE, eval=FALSE}
+# import the counts
+se <- tximeta(samples)
+# create gene-level summarizes
+gse <- summarizeToGene(se)
+# make a dataset
+dds <- DESeqDataSet(se, ~batch + condition)
+# offsets, dispersion, MLE log2FC
+dds <- DESeq(dds)
+# shrinkage estimation
+res <- lfcShrink(dds, coef=2)
+```
+
 
 ---
 
