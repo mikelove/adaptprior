@@ -1,6 +1,7 @@
 ---
 title: "Adaptive priors for genomic data"
 author: Michael Love
+bibliography: library.bib
 output:
   revealjs::revealjs_presentation:
     controls: false
@@ -68,13 +69,26 @@ knitr::opts_chunk$set(cache=TRUE,
 
 Expression of $g$ genes, 5 replicates in 2 groups:
 
-$[X_{g1}, \dots, X_{g5}]$ vs. $[Y_{g1}, \dots, Y_{g5}]$
+$$[X_{g1}, \dots, X_{g5}] \quad \textrm{vs} \quad [Y_{g1}, \dots, Y_{g5}]$$
 
 $$ E(X_{gi}) = \mu_{gX} $$
 
 $$ E(Y_{gi}) = \mu_{gY} $$
 
 $$ \beta_g \equiv \log_2 \left( \frac{\mu_{gY}}{\mu_{gX}} \right) $$
+
+## Complexities
+
+* Counts $X_{gi}$ and $Y_{gi}$ are actually estimated [1]
+* Technical artifacts: per-sample scaling factor / offset [2]
+* Negative Binomial widely used
+    - dispersion parameter must be estimated [3]
+	- zero component for highly amplified data [4]
+
+<small>
+[1] [@Soneson2015], [2] [@Anders2010], <br/>
+[3] [@Love2014], [4] [@Berge2018]
+</small>
 
 ## Effect size over mean ("MA" or Bland-Altman)
 
@@ -193,3 +207,8 @@ ggplot(dat, aes(x=true, y=normal, col=category)) + geom_point(alpha=.3,size=2) +
 </div>
 </div>
 
+---
+
+### References
+
+<font size="-1">
