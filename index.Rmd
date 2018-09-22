@@ -76,13 +76,14 @@ $$ \beta_g \equiv \log_2 \left( \frac{\mu_{gY}}{\mu_{gX}} \right) $$
 
 ## Complexities
 
-* Counts $X_{gi}$ and $Y_{gi}$ are actually estimated [1-3]
-* Technical artifacts: per-sample scaling factor / offset [4-5]
-* Negative Binomial widely used
-    - dispersion parameter must be estimated [6-8]
-	- zero component for highly amplified data [9]
+> * Counts $X_{gi}$ and $Y_{gi}$ are actually estimated [1-3]
+> * Technical artifacts: per-sample scaling factor / offset [4-5]
+> * Negative Binomial widely used
+>     - dispersion parameter must be estimated [6-8]
+>     - zero component for highly amplified data [9]
 
 <small>
+**References** <br/>
 [1] Issue of DGE [@Trapnell2013] <br/>
 [2] Bias models [@Patro2017], <br/>
 [3] Isoform offset [@Soneson2015], <br/>
@@ -177,7 +178,7 @@ ggplot(dat, aes_string(x="true", y=yvar, col="category")) +
 
 ## Normal prior
 
-```{r facetNormal}
+```{r facet-normal}
 yvar <- "Normal.prior"
 ggplot(dat, aes_string(x="true", y=yvar, col="category")) +
   geom_point(alpha=.3,size=2) +
@@ -194,7 +195,7 @@ ggplot(dat, aes(x=true, y=pseudocount.5, col=category)) + geom_point(alpha=.3,si
 
 ## Normal prior
 
-```{r scatterNormal}
+```{r scatter-normal}
 ggplot(dat, aes(x=true, y=Normal.prior, col=category)) + geom_point(alpha=.3,size=2) +
   geom_abline(intercept=0, slope=1, col="black") + ylim(-3,3) + big.text
 ```
@@ -204,7 +205,7 @@ ggplot(dat, aes(x=true, y=Normal.prior, col=category)) + geom_point(alpha=.3,siz
 <div class="container">
 
 <div class="col">
-<img width=400 src="index_files/figure-revealjs/scatterNormal-1.png">
+<img width=400 src="index_files/figure-revealjs/scatter-normal-1.png">
 </div>
 
 <div class="col">
@@ -239,12 +240,12 @@ res <- lfcShrink(dds, coef=3)
 
 ## Look at real LFC distribution
 
-* Highly replicated yeast dataset [@Schurch2016]
-* 42 vs 44 biological replicates
-* $\Delta snf2$ mutant
-    - Catalytic component of the SWI/SNF complex
-    - Chromatin-remodeling 
-    - \+ and - regulation of a large number of genes
+> * Highly replicated yeast dataset [@Schurch2016]
+> * 42 vs 44 biological replicates
+> * $\Delta snf2$ mutant
+>     - Catalytic component of the SWI/SNF complex
+>     - Chromatin-remodeling 
+>     - \+ and - regulation of a large number of genes
 
 ## LFC in highly replicated yeast
 
@@ -259,33 +260,122 @@ res.df$ymax <- with(res.df, log2FoldChange + 2*lfcSE)
 ggplot(res.df, aes(log10mean, log2FoldChange, col=FDR.05)) +
   geom_point(alpha=.3) +
   geom_hline(yintercept=0, col="red") +
-  scale_color_manual(values=c("black", "red"))
+  scale_color_manual(values=c("black", "red")) + big.text
 ```
 
 ## LFC with 2x SE (1700 black, 5100 red)
 
-```{r yeast-ma2, echo=FALSE}
+```{r yeast-ma2, echo=FALSE, out.width=630, out.height=450}
 ggplot(res.df, aes(log10mean, log2FoldChange, col=FDR.05, ymin=ymin, ymax=ymax)) +
   geom_point(alpha=.3) + geom_errorbar(alpha=.3) + 
-  geom_hline(yintercept=0, col="red") + xlim(2,6) + ylim(-2,2) +
-  scale_color_manual(values=c("black", "red"))
+  geom_hline(yintercept=0, col="red") +
+  coord_cartesian(xlim=c(0,5), ylim=c(-2,2)) + 
+  scale_color_manual(values=c("black", "red")) + big.text
 ```
 
-## Problems with the Normal prior
+\* Actually, $y=0$ not trivial to determine here
 
-## ashr prior
+## How the Normal prior is implemented 
 
-## apeglm prior
+> * Consider all of MLE coefficients, $\hat{\beta}_g$
+> * Want to adapt prior to the spread of these
+> * Inverse weight by variance of log counts, $1/\bar{\mu}_g + \alpha_{tr}(\bar{\mu}_g)$
+> * Normal has thin tails
+> * Pick a Normal to match the upper 5% *weighted* quantile
 
-## Issues with estimating scale
+[@Love2014]
 
-## Performance on the yeast data
+## Alternative priors with fat tails
+
+<img width=300 src="andean_cat.jpg">
+
+> * ashr [@Stephens2016]
+>     - $\pi_0 \delta_0 + \sum_{k=1}^K \pi_k N(\cdot; 0, \sigma_k^2)$
+>     - $\sigma_1, \dots, \sigma_k$ a large, dense, fixed grid
+>     - `mixcompdist="normal", method="shrink"`
+> * apeglm [@Zhu2018]
+>     - Cauchy prior with scale parameter $S$
+
+## Method differences
+
+* ashr:
+    - set grid based on min $\hat{s}_g$ and max $\hat{\beta}_g^2 - \hat{s}_g^2$
+    - then estimate $\pi_k$ using $\hat{\beta}_g$ and $\hat{s}_g$
+	- apply to $\hat{\beta}_g$ and $\hat{s}_g$
+	- return the posterior mean and SD
+* apeglm: 
+    - set the scale $S$ of Cauchy using $\hat{\beta}_g$ and $\hat{s}_g$
+    - uses data $Y_g$, fixed parameters $\theta_g$, and likelihood
+	- return the posterior mode
+	- posterior SD via Laplace: works well in practice
+
+## Estimate scale of prior (apeglm)
+
+## Scale of prior (apeglm)
+
+## Yeast with Normal prior
+
+```{r yeast-normal, echo=FALSE}
+load("yeast_dds.rda")
+idx <- c(which(dds$condition=="WT")[1:3],
+         which(dds$condition=="mut")[1:3])
+dds2 <- dds[,idx]
+dds2 <- DESeq(dds2)
+res2 <- lfcShrink(dds2, coef=2, type="normal")
+sub.df <- data.frame(true=res$log2FoldChange,
+                     Normal.prior=res2$log2FoldChange,
+                     mean=res$baseMean)
+cleanIt <- function(sub.df) {
+  sub.df <- sub.df[!is.na(sub.df$true),]
+  sub.df$type <- factor(ifelse(abs(sub.df$true) < 2, "small.LFC",
+                        ifelse(sub.df$mean < 20, "small.mean",
+                               "large.mean")),
+                        c("small.LFC","small.mean","large.mean"))
+  sub.df
+}
+yeast_x_axis <- scale_x_continuous(breaks=(-4:2) * 2, limits=c(-8,4))
+yeast_y_axis <- scale_y_continuous(breaks=-4:2 * 2, limits=c(-8,4))
+sub.df <- cleanIt(sub.df)
+ggplot(sub.df, aes(true, Normal.prior, col=type)) +
+  geom_point(alpha=.3) +
+  geom_abline(slope=1, intercept=0, col="red") +
+  yeast_x_axis + yeast_y_axis + 
+  scale_color_manual(values=c("black", "orange3", "blue")) + big.text
+```
+
+## Yeast with Cauchy prior (apeglm)
+
+```{r yeast-ape, echo=FALSE}
+res2 <- lfcShrink(dds2, coef=2, type="apeglm")
+sub.df <- data.frame(true=res$log2FoldChange,
+                     Cauchy.prior=res2$log2FoldChange,
+                     mean=res$baseMean)
+sub.df <- cleanIt(sub.df)
+ggplot(sub.df, aes(true, Cauchy.prior, col=type)) +
+  geom_point(alpha=.3) +
+  geom_abline(slope=1, intercept=0, col="red") +
+  yeast_x_axis + yeast_y_axis + 
+  scale_color_manual(values=c("black", "orange3", "blue")) + big.text
+```
+
+## Yeast with ashr prior
+
+```{r yeast-ashr, echo=FALSE}
+res2 <- lfcShrink(dds2, coef=2, type="ashr")
+sub.df <- data.frame(true=res$log2FoldChange,
+                     ashr.prior=res2$log2FoldChange,
+                     mean=res$baseMean)
+sub.df <- cleanIt(sub.df)
+ggplot(sub.df, aes(true, ashr.prior, col=type)) +
+  geom_point(alpha=.3) +
+  geom_abline(slope=1, intercept=0, col="red") +
+  yeast_x_axis + yeast_y_axis + 
+  scale_color_manual(values=c("black", "orange3", "blue")) + big.text
+```
 
 ## Performance on simulated data
 
-## ZINB likelihood
-
-## Dispersion prior
+## Cauchy as dispersion prior
 
 ---
 
