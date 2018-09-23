@@ -309,6 +309,8 @@ ggplot(res.df, aes(log10mean, log2FoldChange, col=FDR.05, ymin=ymin, ymax=ymax))
 
 ## Connection to `bayesglm`
 
+details about approximate EM
+
 insert quotes from paper
 
 ## `apeglm` implementation
@@ -316,20 +318,30 @@ insert quotes from paper
 **A**pproximate **P**osterior **E**stimation for **GLM**
 
 * Prior fit to $\hat{beta}_g$ and $\hat{s}_g$
-* C++ implementation of L-BFGS-B to obtain posterior mode (1)
-* `optim` to obtain Hessian for Laplace approximation (2)
-* (1) takes fraction of second, (2) takes ~3 seconds
+* C++ version of L-BFGS-B to obtain posterior mode [1]
+* `optim` to obtain Hessian for Laplace approximation [2]
+* [1] takes < 1 s, [2] takes ~3 s, for e.g. 10k genes
 * Output posterior mode, SD, profile posterior intervals
 
 ## Estimate scale of prior (apeglm)
 
 show Efron Morris eqns
 
-## Scale of prior (apeglm)
+## Prior scale & False Sign Rate (FSR)
 
-show diagrams
+<img src="adaptive_fsr.png">
 
-## Yeast with Normal prior (3 vs 3)
+## Prior scale & estimation error
+
+<img src="adaptive_eif.png">
+
+## Prior scale & estimation error (example)
+
+<img src="adaptive_eif_problem.png">
+
+## Return to yeast example: 3 vs 3 replicates
+
+## Yeast with Normal prior
 
 ```{r echo=FALSE}
 load("yeast_res.rda")
@@ -363,7 +375,7 @@ ggplot(sub.df, aes(true, Normal.prior, col=type)) +
   scale_color_manual(values=c("black", "orange3", "blue")) + big.text
 ```
 
-## Yeast with Cauchy prior (apeglm)
+## Yeast with `apeglm`
 
 ```{r yeast-ape, echo=FALSE}
 res2 <- lfcShrink(dds2, coef=2, type="apeglm")
@@ -378,7 +390,7 @@ ggplot(sub.df, aes(true, Cauchy.prior, col=type)) +
   scale_color_manual(values=c("black", "orange3", "blue")) + big.text
 ```
 
-## Yeast with ashr prior
+## Yeast with `ashr`
 
 ```{r yeast-ashr, echo=FALSE}
 res2 <- lfcShrink(dds2, coef=2, type="ashr")
@@ -393,9 +405,17 @@ ggplot(sub.df, aes(true, ashr.prior, col=type)) +
   scale_color_manual(values=c("black", "orange3", "blue")) + big.text
 ```
 
-## Performance on simulated data
+## Yeast results
 
-insert diagram
+<img width=750 src="yeast.png">
+
+## Simulation: 5 and 10 replicates per group
+
+<img width=750 src="sim_b.png">
+
+## Simulation: 30 and 50 replicates per group
+
+<img width=750 src="sim_largesize_b.png">
 
 ---
 
