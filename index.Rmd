@@ -292,22 +292,20 @@ ggplot(res.df, aes(log10mean, log2FoldChange, col=FDR.05, ymin=ymin, ymax=ymax))
 > * ashr [@Stephens2016]
 >     - $\pi_0 \delta_0 + \sum_{k=1}^K \pi_k N(\cdot; 0, \sigma_k^2)$
 >     - $\sigma_1, \dots, \sigma_k$ a large, dense, fixed grid
->     - `mixcompdist="normal", method="shrink"`
 > * apeglm [@Zhu2018]
 >     - Cauchy prior with scale parameter $S$
 
 ## Method differences
 
-* ashr:
-    - set grid based on min $\hat{s}_g$ and max $\hat{\beta}_g^2 - \hat{s}_g^2$
-    - then estimate $\pi_k$ using $\hat{\beta}_g$ and $\hat{s}_g$
-	- apply to $\hat{\beta}_g$ and $\hat{s}_g$
-	- return the posterior mean and SD
-* apeglm: 
-    - set the scale $S$ of Cauchy using $\hat{\beta}_g$ and $\hat{s}_g$
-    - uses data $Y_g$, fixed parameters $\theta_g$, and likelihood
-	- return the posterior mode
-	- posterior SD via Laplace: works well in practice
+> * ashr:
+>     - set grid based on min $\hat{s}_g$ and max $\hat{\beta}_g^2 - \hat{s}_g^2$
+>     - estimate $\pi_k$ using $\hat{\beta}_g$ and $\hat{s}_g$
+>     - $P(\hat{\beta}_g | \beta_g, \hat{s}_g) = N(\hat{\beta}_g; \beta_g, \hat{s}_g^2)$
+>     - return the posterior mean and SD
+> * apeglm: 
+>     - set the scale $S$ of Cauchy using $\hat{\beta}_g$ and $\hat{s}_g$
+>     - use data $Y_g$, fixed parameters $\theta_g$, data likelihood
+>     - return the posterior mode, posterior SD with Laplace approximation
 
 ## Estimate scale of prior (apeglm)
 
@@ -379,6 +377,5 @@ ggplot(sub.df, aes(true, ashr.prior, col=type)) +
 
 ---
 
-### References
-
 <font size="-1">
+
