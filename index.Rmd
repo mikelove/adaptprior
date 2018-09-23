@@ -311,7 +311,7 @@ ggplot(res.df, aes(log10mean, log2FoldChange, col=FDR.05, ymin=ymin, ymax=ymax))
 
 ## Scale of prior (apeglm)
 
-## Yeast with Normal prior
+## Yeast with Normal prior (3 vs 3)
 
 ```{r yeast-normal, echo=FALSE}
 load("yeast_dds.rda")
@@ -372,6 +372,17 @@ ggplot(sub.df, aes(true, ashr.prior, col=type)) +
 ```
 
 ## Performance on simulated data
+
+## Acknowledgments 
+
+* [apeglm preprint](https://doi.org/10.1101/303255)
+* Work by: Anqi Zhu and Joseph Ibrahim
+* Comments from: Wolfgang Huber and Cecile Le Sueur 
+* Funding:
+    - MIL - R01 HG009125, P01 CA142538, P30 ES010126
+    - JGI and AZ - R01 GM070335 and P01 CA142538
+
+## Normal dispersion prior
 
 ## Cauchy as dispersion prior
 
