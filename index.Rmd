@@ -285,7 +285,7 @@ ggplot(res.df, aes(log10mean, log2FoldChange, col=FDR.05, ymin=ymin, ymax=ymax))
 
 [@Love2014]
 
-## Alternative priors with fat tails
+## Alternative adaptive priors with fat tails
 
 <img width=300 src="andean_cat.jpg">
 
@@ -307,13 +307,32 @@ ggplot(res.df, aes(log10mean, log2FoldChange, col=FDR.05, ymin=ymin, ymax=ymax))
 >     - use data $Y_g$, fixed parameters $\theta_g$, data likelihood
 >     - return the posterior mode, posterior SD with Laplace approximation
 
+## Connection to `bayesglm`
+
+insert quotes from paper
+
+## `apeglm` implementation
+
+**A**pproximate **P**osterior **E**stimation for **GLM**
+
+* Prior fit to $\hat{beta}_g$ and $\hat{s}_g$
+* C++ implementation of L-BFGS-B to obtain posterior mode (1)
+* `optim` to obtain Hessian for Laplace approximation (2)
+* (1) takes fraction of second, (2) takes ~3 seconds
+* Output posterior mode, SD, profile posterior intervals
+
 ## Estimate scale of prior (apeglm)
+
+show Efron Morris eqns
 
 ## Scale of prior (apeglm)
 
+show diagrams
+
 ## Yeast with Normal prior (3 vs 3)
 
-```{r yeast-normal, echo=FALSE}
+```{r echo=FALSE}
+load("yeast_res.rda")
 load("yeast_dds.rda")
 idx <- c(which(dds$condition=="WT")[1:3],
          which(dds$condition=="mut")[1:3])
@@ -331,11 +350,14 @@ cleanIt <- function(sub.df) {
                         c("small.LFC","small.mean","large.mean"))
   sub.df
 }
+```
+
+```{r yeast-normal, echo=FALSE}
 yeast_x_axis <- scale_x_continuous(breaks=(-4:2) * 2, limits=c(-8,4))
 yeast_y_axis <- scale_y_continuous(breaks=-4:2 * 2, limits=c(-8,4))
 sub.df <- cleanIt(sub.df)
 ggplot(sub.df, aes(true, Normal.prior, col=type)) +
-  geom_point(alpha=.3) +
+  geom_point(alpha=.3, size=3) +
   geom_abline(slope=1, intercept=0, col="red") +
   yeast_x_axis + yeast_y_axis + 
   scale_color_manual(values=c("black", "orange3", "blue")) + big.text
@@ -350,7 +372,7 @@ sub.df <- data.frame(true=res$log2FoldChange,
                      mean=res$baseMean)
 sub.df <- cleanIt(sub.df)
 ggplot(sub.df, aes(true, Cauchy.prior, col=type)) +
-  geom_point(alpha=.3) +
+  geom_point(alpha=.3, size=3) +
   geom_abline(slope=1, intercept=0, col="red") +
   yeast_x_axis + yeast_y_axis + 
   scale_color_manual(values=c("black", "orange3", "blue")) + big.text
@@ -365,13 +387,56 @@ sub.df <- data.frame(true=res$log2FoldChange,
                      mean=res$baseMean)
 sub.df <- cleanIt(sub.df)
 ggplot(sub.df, aes(true, ashr.prior, col=type)) +
-  geom_point(alpha=.3) +
+  geom_point(alpha=.3, size=3) +
   geom_abline(slope=1, intercept=0, col="red") +
   yeast_x_axis + yeast_y_axis + 
   scale_color_manual(values=c("black", "orange3", "blue")) + big.text
 ```
 
 ## Performance on simulated data
+
+insert diagram
+
+---
+
+```{r echo=FALSE}
+m <- 4
+n <- 3200
+dmr <- function(x) 1/x + exp(rnorm(n,log(.05),1))
+set.seed(1)
+betaSD <- rep(c(0,1),c(3000,200))
+dds <- makeExampleDESeqDataSet(m=m, n=n, betaSD=betaSD,
+                               interceptMean=5, interceptSD=4,
+                               dispMeanRel=dmr)
+mcols(dds)$betaSD <- betaSD
+keep <- rowSums(counts(dds) >= 5) >= 3
+keep <- keep & rowMeans(counts(dds)) < 1e4
+dds <- dds[keep,]
+dds <- DESeq(dds, fitType="mean")
+apeglm <- lfcShrink(dds, coef=2, type="apeglm")$log2FoldChange
+ashr <- lfcShrink(dds, coef=2, type="ashr")$log2FoldChange
+dat <- data.frame(log10mean=rep(log10(mcols(dds)$baseMean),2),
+                  estimate=c(apeglm,ashr),
+                  method=rep(c("apeglm","ashr"),each=nrow(dds)),
+                  true=rep(mcols(dds)$trueBeta,2),
+                  category=factor(paste0("betaSD:",rep(mcols(dds)$betaSD,2))))
+```
+
+```{r apeglm-limit, echo=FALSE, fig.width=7, fig.height=3}
+ggplot(dat, aes(x=true, y=estimate, col=category)) +
+  geom_point(alpha=.3,size=2) +
+  geom_abline(slope=1, intercept=0, col="black") +
+  scale_color_manual(values=c("black", "blue")) + 
+  big.text + facet_wrap(~method) + ggtitle("apeglm limitation: n=2 vs 2, spike at 0")
+```
+
+```{r apeglm-limit2, echo=FALSE, fig.width=7, fig.height=3}
+ggplot(dat, aes(x=log10mean, y=estimate, col=category)) +
+  geom_point(alpha=.3,size=2) +
+  big.text + facet_wrap(~method) +
+  scale_color_manual(values=c("black", "blue")) + 
+  ggtitle("apeglm limitation: n=2 vs 2, spike at 0")
+```
 
 ## Acknowledgments 
 
@@ -384,7 +449,12 @@ ggplot(sub.df, aes(true, ashr.prior, col=type)) +
 
 ## Normal dispersion prior
 
+* talk about DSS
+* talk about DESeq2
+
 ## Cauchy as dispersion prior
+
+* talk about new paper
 
 ---
 
