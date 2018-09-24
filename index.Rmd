@@ -302,14 +302,11 @@ ggplot(res.df, aes(log10mean, log2FoldChange, col=FDR.05, ymin=ymin, ymax=ymax))
 
 ## Previous work on LFC shrinkage in RNA-seq
 
-* ShrinkBayes [@vandewiel2012]
-    - Dirac–Gaussian, Gaussian–Dirac–Gaussian
-	- Gamma–Dirac-reverse Gamma, Dirac-central Laplace
-* ShrinkBayes [@vandewiel2014]
-    - automated estimation of parametric priors
+* ShrinkBayes [@vandewiel2012;@vandewiel2014]
+    - shrinkage of many parameters simultaneously
     - non-equal mixture proportions for + and - effects
-	- Spike-Gauss-Gauss, and Spike-Nonparametric
-* Models fit using Integrated Nested Laplace Approximation `INLA`
+	- spike + parametric,  spike + non-parametric
+    - Integrated Nested Laplace Approximation `INLA`
 
 ## Method details
 
@@ -330,6 +327,17 @@ ggplot(res.df, aes(log10mean, log2FoldChange, col=FDR.05, ymin=ymin, ymax=ymax))
 > * Posterior mode and SE via an approximate EM within IRLS
 > * "*want something better than the unstable estimates produced by the current default - maximum likelihood*"
 > * "*[Cauchy] allows for occasional large coefficients while still performing a reasonable amount of shrinkage for coefficients near zero*"
+
+## Connection to `bayesglm`
+
+Cauchy can be modeled as a mixture of Normals:
+
+$$ \beta \sim N(\mu, \sigma^2) $$
+
+$$ \sigma^2 \sim \textrm{Scale-inv-} \chi^2(\nu, S^2) $$
+
+* Within IRLS, perform an EM step
+* Treat $\beta$ as missing data, estimate $\sigma$
 
 [@Gelman2008]
 
