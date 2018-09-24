@@ -332,9 +332,20 @@ ggplot(res.df, aes(log10mean, log2FoldChange, col=FDR.05, ymin=ymin, ymax=ymax))
 * `optim` to obtain Hessian for Laplace approximation [2]
 * [1] takes < 1 s, [2] takes ~3 s, over e.g. 10k genes
 
-## Estimate scale of prior (apeglm)
+## To estimate the prior scale
 
-show Efron Morris eqns
+Solve for $A$ in the following equation [@EfronMorris]
+
+$$ A = \sum_{g=1}^G (\hat{\beta}_g^2 - e_g^2) I_g(A) / \sum_{g=1}^G I_g(A) $$
+$$ I_g(a) \equiv 1/[2(a + e_g^2)^2] $$
+
+Motivated by the following hierarchical model:
+
+$$ \hat{\beta}_g \sim N(\beta_g, e_g^2) $$
+
+$$ \beta_g \sim N(0, A) $$
+
+We plug in $\hat{s}_g^2$ for $e_g^2$.
 
 ## Prior scale & False Sign Rate (FSR)
 
@@ -426,6 +437,8 @@ ggplot(sub.df, aes(true, ashr.prior, col=type)) +
 
 <img width=750 src="sim_largesize_b.png">
 
+## Problem case for apeglm
+
 ---
 
 ```{r echo=FALSE}
@@ -467,15 +480,24 @@ ggplot(dat, aes(x=log10mean, y=estimate, col=category)) +
   ggtitle("apeglm limitation: n=2 vs 2, spike at 0")
 ```
 
-## Acknowledgments 
+---
 
-* [apeglm preprint](https://doi.org/10.1101/303255)
-* Work by: Anqi Zhu and Joseph Ibrahim
-* Comments from: Wolfgang Huber and Cecile Le Sueur 
+**Paper and software**
+
+* [apeglm preprint](https://doi.org/10.1101/303255) on bioRxiv 
+* with ZINB single cell simulation, bimodal LFC dist'n
+* `lfcShrink(dds, coef=2, type="apeglm")`
+* `lfcShrink(dds, coef=2, type="ashr")`
+
+**Acknowledgments**
+
+* Work by **Anqi Zhu** and Joseph Ibrahim
+* Comments from Wolfgang Huber and Cecile Le Sueur 
 * Funding:
     - MIL - R01 HG009125, P01 CA142538, P30 ES010126
     - JGI and AZ - R01 GM070335 and P01 CA142538
 
+<!--
 ## Connection to Bayesian methods
 
 * baySeq
@@ -489,6 +511,7 @@ ggplot(dat, aes(x=log10mean, y=estimate, col=category)) +
 ## Student's t as dispersion prior
 
 * new paper
+-->
 
 ---
 
