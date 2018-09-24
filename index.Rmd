@@ -1,6 +1,10 @@
 ---
-title: "Adaptive priors for genomic data"
-author: Michael Love
+title: "Adaptive priors for estimating effect size with genomic data"
+author: |
+  | Michael Love
+  | Dept. of Biostatistics
+  | Dept. of Genetics
+  | UNC-Chapel Hill
 bibliography: library.bib
 output: 
   revealjs::revealjs_presentation:
@@ -123,7 +127,7 @@ grp2 <- rowMeans(counts(dds)[,(m/2 + 1):m])
 
 ```{r ma}
 dat <- data.frame(log10mean=log10(.5 * (grp1 + grp2)),
-                  log2FC=log2(grp2/grp1),
+                  log2FoldChange=log2(grp2/grp1),
                   pseudocount.1=log2(grp2+1) - log2(grp1+1),
                   pseudocount.5=log2(grp2+5) - log2(grp1+5),
                   Normal.prior=normal,
@@ -135,7 +139,7 @@ big.text <- theme(axis.text=element_text(size=14),
                   axis.title=element_text(size=18),
                   legend.text=element_text(size=14),
                   legend.title=element_text(size=16))
-ggplot(dat, aes(x=log10mean, y=log2FC, col=category)) +
+ggplot(dat, aes(x=log10mean, y=log2FoldChange, col=category)) +
   geom_point(alpha=.3,size=2) +
   ylim(-5,5) + geom_hline(yintercept=0, col="black") + big.text
 ```
@@ -143,7 +147,7 @@ ggplot(dat, aes(x=log10mean, y=log2FC, col=category)) +
 ## Estimate over truth
 
 ```{r scatter}
-ggplot(dat, aes(x=true, y=log2FC, col=category)) + geom_point(alpha=.3,size=2) +
+ggplot(dat, aes(x=true, y=log2FoldChange, col=category)) + geom_point(alpha=.3,size=2) +
   geom_abline(intercept=0, slope=1, col="black") +
   ylim(-3,3) + big.text
 ```
@@ -151,7 +155,7 @@ ggplot(dat, aes(x=true, y=log2FC, col=category)) + geom_point(alpha=.3,size=2) +
 ## Faceted by mean
 
 ```{r facet}
-ggplot(dat, aes(x=true, y=log2FC, col=category)) + geom_point(alpha=.3,size=2) +
+ggplot(dat, aes(x=true, y=log2FoldChange, col=category)) + geom_point(alpha=.3,size=2) +
   geom_abline(intercept=0, slope=1, col="black") + facet_wrap(~category) +
   ylim(-3,3) + big.text
 ```
@@ -231,7 +235,7 @@ dds <- DESeqDataSet(gse, ~batch + condition)
 # variance stabilization for PCA, etc.
 vsd <- vst(dds)
 
-# scaling factors, dispersion, MLE log2FC
+# scaling factors, dispersion, MLE LFC
 dds <- DESeq(dds)
 
 # shrinkage estimation
@@ -295,17 +299,18 @@ ggplot(res.df, aes(log10mean, log2FoldChange, col=FDR.05, ymin=ymin, ymax=ymax))
 > * apeglm [@Zhu2018]
 >     - Cauchy prior with scale parameter $S$
 
-## Method differences
+## Method details
 
 > * ashr:
->     - set grid based on min $\hat{s}_g$ and max $\hat{\beta}_g^2 - \hat{s}_g^2$
+>     - set $\sigma_k$ grid based on min $\hat{s}_g$ and max $\hat{\beta}_g^2 - \hat{s}_g^2$
 >     - estimate $\pi_k$ using $\hat{\beta}_g$ and $\hat{s}_g$
 >     - $P(\hat{\beta}_g | \beta_g, \hat{s}_g) = N(\hat{\beta}_g; \beta_g, \hat{s}_g^2)$
->     - return the posterior mean and SD
+>     - return the posterior mean, SD, FSR
 > * apeglm: 
 >     - set the scale $S$ of Cauchy using $\hat{\beta}_g$ and $\hat{s}_g$
->     - use data $Y_g$, fixed parameters $\theta_g$, data likelihood
->     - return the posterior mode, posterior SD with Laplace approximation
+>     - shrink only one coefficient at a time
+>     - use data $Y_g$, parameters $\theta_g$, likelihood (NB, ZINB, etc.)
+>     - return the posterior mode, SD, profile posterior intervals
 
 ## Connection to `bayesglm`
 
@@ -317,11 +322,11 @@ insert quotes from paper
 
 **A**pproximate **P**osterior **E**stimation for **GLM**
 
-* Prior fit to $\hat{beta}_g$ and $\hat{s}_g$
+* Prior fit to $\hat{\beta}_g$ and $\hat{s}_g$, details on next slide
+* Treat dispersion parameter as fixed
 * C++ version of L-BFGS-B to obtain posterior mode [1]
 * `optim` to obtain Hessian for Laplace approximation [2]
-* [1] takes < 1 s, [2] takes ~3 s, for e.g. 10k genes
-* Output posterior mode, SD, profile posterior intervals
+* [1] takes < 1 s, [2] takes ~3 s, over e.g. 10k genes
 
 ## Estimate scale of prior (apeglm)
 
@@ -405,7 +410,7 @@ ggplot(sub.df, aes(true, ashr.prior, col=type)) +
   scale_color_manual(values=c("black", "orange3", "blue")) + big.text
 ```
 
-## Yeast results
+## Yeast results: 3 and 5 replicates per group
 
 <img width=750 src="yeast.png">
 
@@ -467,14 +472,19 @@ ggplot(dat, aes(x=log10mean, y=estimate, col=category)) +
     - MIL - R01 HG009125, P01 CA142538, P30 ES010126
     - JGI and AZ - R01 GM070335 and P01 CA142538
 
-## Normal dispersion prior
+## Connection to Bayesian methods
 
-* talk about DSS
-* talk about DESeq2
+* baySeq
+* ShrinkBayes
 
-## Cauchy as dispersion prior
+## Connection to dispersion prior
 
-* talk about new paper
+* DSS
+* DESeq2
+
+## Student's t as dispersion prior
+
+* new paper
 
 ---
 
