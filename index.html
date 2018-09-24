@@ -692,6 +692,23 @@ res &lt;-<span class="st"> </span><span class="kw">lfcShrink</span>(dds, <span c
 </ul></li>
 </ul>
 </section>
+<section id="previous-work-on-lfc-shrinkage-in-rna-seq" class="slide level2">
+<h2>Previous work on LFC shrinkage in RNA-seq</h2>
+<ul>
+<li>ShrinkBayes <span class="citation" data-cites="vandewiel2012">(Mark A. van de Wiel et al., 2012)</span>
+<ul>
+<li>Dirac–Gaussian, Gaussian–Dirac–Gaussian</li>
+<li>Gamma–Dirac-reverse Gamma, Dirac-central Laplace</li>
+</ul></li>
+<li>ShrinkBayes <span class="citation" data-cites="vandewiel2014">(Mark A van de Wiel, Neerincx, Buffart, Sie, &amp; Verheul, 2014)</span>
+<ul>
+<li>automated estimation of parametric priors</li>
+<li>non-equal mixture proportions for + and - effects</li>
+<li>Spike-Gauss-Gauss, and Spike-Nonparametric</li>
+</ul></li>
+<li>Models fit using Integrated Nested Laplace Approximation <code>INLA</code></li>
+</ul>
+</section>
 <section id="method-details" class="slide level2">
 <h2>Method details</h2>
 <ul>
@@ -732,14 +749,18 @@ res &lt;-<span class="st"> </span><span class="kw">lfcShrink</span>(dds, <span c
 <li>[1] takes &lt; 1 s, [2] takes ~3 s, over e.g. 10k genes</li>
 </ul>
 </section>
-<section id="to-estimate-the-prior-scale" class="slide level2">
-<h2>To estimate the prior scale</h2>
-<p>Solve for <span class="math inline">\(A\)</span> in the following equation <span class="citation" data-cites="EfronMorris">(Efron &amp; Morris, 1975)</span></p>
-<p><span class="math display">\[ A = \sum_{g=1}^G (\hat{\beta}_g^2 - e_g^2) I_g(A) / \sum_{g=1}^G I_g(A) \]</span> <span class="math display">\[ I_g(a) \equiv 1/[2(a + e_g^2)^2] \]</span></p>
+<section class="slide level2">
+
+<p>Solve for <span class="math inline">\(A\)</span> in the following <span class="citation" data-cites="EfronMorris">(Efron &amp; Morris, 1975)</span></p>
+<p><span class="math inline">\(A = \sum_{g=1}^G (\hat{\beta}_g^2 - e_g^2) I_g(A) \, / \, \sum_{g=1}^G I_g(A)\)</span></p>
+<p><span class="math inline">\(I_g(a) \equiv 1/[2(a + e_g^2)^2]\)</span></p>
 <p>Motivated by the following hierarchical model:</p>
 <p><span class="math display">\[ \hat{\beta}_g \sim N(\beta_g, e_g^2) \]</span></p>
 <p><span class="math display">\[ \beta_g \sim N(0, A) \]</span></p>
-<p>We plug in <span class="math inline">\(\hat{s}_g^2\)</span> for <span class="math inline">\(e_g^2\)</span>.</p>
+<ol type="1">
+<li class="fragment">We plug in <span class="math inline">\(\hat{s}_g^2\)</span> for <span class="math inline">\(e_g^2\)</span></li>
+<li class="fragment">We use <span class="math inline">\(S = \sqrt{A}\)</span> to scale a <em>Cauchy</em> not a <em>Normal</em> prior</li>
+</ol>
 </section>
 <section id="prior-scale-false-sign-rate-fsr" class="slide level2">
 <h2>Prior scale &amp; False Sign Rate (FSR)</h2>
@@ -761,11 +782,11 @@ res &lt;-<span class="st"> </span><span class="kw">lfcShrink</span>(dds, <span c
 <p><img src="index_files/figure-revealjs/yeast-normal-1.png" width="768" /></p>
 </section>
 <section id="yeast-with-apeglm" class="slide level2">
-<h2>Yeast with <code>apeglm</code></h2>
+<h2>Yeast with apeglm</h2>
 <p><img src="index_files/figure-revealjs/yeast-ape-1.png" width="768" /></p>
 </section>
 <section id="yeast-with-ashr" class="slide level2">
-<h2>Yeast with <code>ashr</code></h2>
+<h2>Yeast with ashr</h2>
 <p><img src="index_files/figure-revealjs/yeast-ashr-1.png" width="768" /></p>
 </section>
 <section id="yeast-results-3-and-5-replicates-per-group" class="slide level2">
@@ -825,7 +846,7 @@ res &lt;-<span class="st"> </span><span class="kw">lfcShrink</span>(dds, <span c
 </section>
 <section class="slide level2">
 
-<p><font size="-1"></p>
+<p><font size="-2"></p>
 <div id="refs" class="references">
 <div id="ref-Anders2010">
 <p>Anders, S., &amp; Huber, W. (2010). Differential expression analysis for sequence count data. <em>Genome Biology</em>, <em>11</em>, R106. <a href="https://doi.org/10.1186/gb-2010-11-10-r106" class="uri">https://doi.org/10.1186/gb-2010-11-10-r106</a></p>
@@ -862,6 +883,12 @@ res &lt;-<span class="st"> </span><span class="kw">lfcShrink</span>(dds, <span c
 </div>
 <div id="ref-Berge2018">
 <p>Van den Berge, K., Perraudeau, F., Soneson, C., Love, M. I., Risso, D., Vert, J.-P., … Clement, L. (2018). Observation weights unlock bulk RNA-seq tools for zero inflation and single-cell applications. <em>Genome Biology</em>, <em>19</em>(24). <a href="https://doi.org/10.1186/s13059-018-1406-4" class="uri">https://doi.org/10.1186/s13059-018-1406-4</a></p>
+</div>
+<div id="ref-vandewiel2012">
+<p>Wiel, M. A. van de, Leday, G. G., Pardo, L., Rue, H., Vaart, A. W. van der, &amp; Wieringen, W. N. van. (2012). Bayesian analysis of RNA sequencing data by estimating multiple shrinkage priors. <em>Biostatistics</em>, <em>14</em>(1), 113–128. <a href="https://doi.org/10.1093/biostatistics/kxs031" class="uri">https://doi.org/10.1093/biostatistics/kxs031</a></p>
+</div>
+<div id="ref-vandewiel2014">
+<p>Wiel, M. A. van de, Neerincx, M., Buffart, T. E., Sie, D., &amp; Verheul, H. M. (2014). ShrinkBayes: a versatile R-package for analysis of count-based sequencing data in complex study designs. <em>BMC Bioinformatics</em>, <em>15</em>(116). <a href="https://doi.org/10.1186/1471-2105-15-116" class="uri">https://doi.org/10.1186/1471-2105-15-116</a></p>
 </div>
 <div id="ref-Wu2012">
 <p>Wu, H., Wang, C., &amp; Wu, Z. (2012). A new shrinkage estimator for dispersion improves differential expression detection in RNA-seq data. <em>Biostatistics</em>, <em>14</em>(2). <a href="https://doi.org/10.1093/biostatistics/kxs033" class="uri">https://doi.org/10.1093/biostatistics/kxs033</a></p>

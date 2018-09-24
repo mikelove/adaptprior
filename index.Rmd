@@ -300,6 +300,17 @@ ggplot(res.df, aes(log10mean, log2FoldChange, col=FDR.05, ymin=ymin, ymax=ymax))
 > * apeglm [@Zhu2018]
 >     - Cauchy prior with scale parameter $S$
 
+## Previous work on LFC shrinkage in RNA-seq
+
+* ShrinkBayes [@vandewiel2012]
+    - Dirac–Gaussian, Gaussian–Dirac–Gaussian
+	- Gamma–Dirac-reverse Gamma, Dirac-central Laplace
+* ShrinkBayes [@vandewiel2014]
+    - automated estimation of parametric priors
+    - non-equal mixture proportions for + and - effects
+	- Spike-Gauss-Gauss, and Spike-Nonparametric
+* Models fit using Integrated Nested Laplace Approximation `INLA`
+
 ## Method details
 
 > * ashr:
@@ -332,12 +343,13 @@ ggplot(res.df, aes(log10mean, log2FoldChange, col=FDR.05, ymin=ymin, ymax=ymax))
 * `optim` to obtain Hessian for Laplace approximation [2]
 * [1] takes < 1 s, [2] takes ~3 s, over e.g. 10k genes
 
-## To estimate the prior scale
+---
 
-Solve for $A$ in the following equation [@EfronMorris]
+Solve for $A$ in the following [@EfronMorris]
 
-$$ A = \sum_{g=1}^G (\hat{\beta}_g^2 - e_g^2) I_g(A) / \sum_{g=1}^G I_g(A) $$
-$$ I_g(a) \equiv 1/[2(a + e_g^2)^2] $$
+$A = \sum_{g=1}^G (\hat{\beta}_g^2 - e_g^2) I_g(A) \, / \, \sum_{g=1}^G I_g(A)$
+
+$I_g(a) \equiv 1/[2(a + e_g^2)^2]$
 
 Motivated by the following hierarchical model:
 
@@ -345,7 +357,8 @@ $$ \hat{\beta}_g \sim N(\beta_g, e_g^2) $$
 
 $$ \beta_g \sim N(0, A) $$
 
-We plug in $\hat{s}_g^2$ for $e_g^2$.
+> 1. We plug in $\hat{s}_g^2$ for $e_g^2$
+> 2. We use $S = \sqrt{A}$ to scale a *Cauchy* not a *Normal* prior
 
 ## Prior scale & False Sign Rate (FSR)
 
@@ -395,7 +408,7 @@ ggplot(sub.df, aes(true, Normal.prior, col=type)) +
   scale_color_manual(values=c("black", "orange3", "blue")) + big.text
 ```
 
-## Yeast with `apeglm`
+## Yeast with apeglm
 
 ```{r yeast-ape, echo=FALSE}
 res2 <- lfcShrink(dds2, coef=2, type="apeglm")
@@ -410,7 +423,7 @@ ggplot(sub.df, aes(true, Cauchy.prior, col=type)) +
   scale_color_manual(values=c("black", "orange3", "blue")) + big.text
 ```
 
-## Yeast with `ashr`
+## Yeast with ashr
 
 ```{r yeast-ashr, echo=FALSE}
 res2 <- lfcShrink(dds2, coef=2, type="ashr")
@@ -515,5 +528,5 @@ ggplot(dat, aes(x=log10mean, y=estimate, col=category)) +
 
 ---
 
-<font size="-1">
+<font size="-2">
 
