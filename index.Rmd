@@ -328,6 +328,8 @@ ggplot(res.df, aes(log10mean, log2FoldChange, col=FDR.05, ymin=ymin, ymax=ymax))
 > * "*want something better than the unstable estimates produced by the current default - maximum likelihood*"
 > * "*[Cauchy] allows for occasional large coefficients while still performing a reasonable amount of shrinkage for coefficients near zero*"
 
+[@Gelman2008]
+
 ## Connection to `bayesglm`
 
 Cauchy can be modeled as a mixture of Normals:
