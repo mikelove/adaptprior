@@ -6,6 +6,7 @@ author: |
   | Dept. of Genetics
   | UNC-Chapel Hill
 bibliography: library.bib
+csl: apa.csl
 output: 
   revealjs::revealjs_presentation:
     highlight: tango
@@ -314,9 +315,12 @@ ggplot(res.df, aes(log10mean, log2FoldChange, col=FDR.05, ymin=ymin, ymax=ymax))
 
 ## Connection to `bayesglm`
 
-details about approximate EM
+> * Uses a 2.5 scale Cauchy prior on non-constant coefficients
+> * Posterior mode and SE via an approximate EM within IRLS
+> * "*want something better than the unstable estimates produced by the current default - maximum likelihood*"
+> * "*[Cauchy] allows for occasional large coefficients while still performing a reasonable amount of shrinkage for coefficients near zero*"
 
-insert quotes from paper
+[@Gelman2008]
 
 ## `apeglm` implementation
 
