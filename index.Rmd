@@ -513,8 +513,8 @@ ggplot(dat, aes(x=log10mean, y=estimate, col=category)) +
 
 **Paper and software**
 
-* [apeglm preprint](https://doi.org/10.1101/303255) on bioRxiv 
-* with ZINB single cell simulation, bimodal LFC dist'n
+* [apeglm preprint](https://doi.org/10.1101/303255) on bioRxiv
+  (accepted at *Bioinformatics*)
 * `lfcShrink(dds, coef=2, type="apeglm")`
 * `lfcShrink(dds, coef=2, type="ashr")`
 

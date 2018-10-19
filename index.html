@@ -570,12 +570,11 @@ UNC-Chapel Hill</div></h2>
 </ul>
 <p><small> <strong>References</strong> <br/> [1] Issue of DGE <span class="citation" data-cites="Trapnell2013">(Trapnell et al., 2013)</span> <br/> [2] Bias models <span class="citation" data-cites="Patro2017">(Patro, Duggal, Love, Irizarry, &amp; Kingsford, 2017)</span>, <br/> [3] Isoform offset <span class="citation" data-cites="Soneson2015">(Soneson, Love, &amp; Robinson, 2015)</span>, <br/> [4] TMM <span class="citation" data-cites="Robinson2010">(M. D. Robinson &amp; Oshlack, 2010)</span>, <br/> [5] Median ratio <span class="citation" data-cites="Anders2010">(Anders &amp; Huber, 2010)</span>, <br/> [6] edgeR GLM <span class="citation" data-cites="McCarthy2012">(McCarthy, Chen, &amp; Smyth, 2012)</span>, <br/> [7] DSS <span class="citation" data-cites="Wu2012">(H. Wu, Wang, &amp; Wu, 2012)</span>, <br/> [8] DESeq2 <span class="citation" data-cites="Love2014">(Love, Huber, &amp; Anders, 2014)</span>, <br/> [9] ZI weights <span class="citation" data-cites="Berge2018">(Van den Berge et al., 2018)</span> </small></p>
 </section>
-<section id="start-with-simple" class="slide level2">
-<h2>Start with simple</h2>
+<section id="effect-size-in-simulated-data" class="slide level2">
+<h2>Effect size in simulated data</h2>
 <ul>
-<li>Simple simulation of count data (Negative Binomial)</li>
-<li>2500 genes, 5 vs 5 replicates</li>
-<li>Dispersion ~ mean trend</li>
+<li>Simulation of over-dispersed count data</li>
+<li>2500 “genes”, 5 vs 5 replicates</li>
 </ul>
 </section>
 <section id="effect-size-over-mean-ma-or-bland-altman" class="slide level2">
@@ -677,8 +676,8 @@ res &lt;-<span class="st"> </span><span class="kw">lfcShrink</span>(dds, <span c
 </ul>
 <p><span class="citation" data-cites="Love2014">(Love et al., 2014)</span></p>
 </section>
-<section id="alternative-adaptive-priors-with-fat-tails" class="slide level2">
-<h2>Alternative adaptive priors with fat tails</h2>
+<section id="alternative-adaptive-priors-with-heavy-tails" class="slide level2">
+<h2>Alternative adaptive priors with heavy tails</h2>
 <p><img width=300 src="andean_cat.jpg"></p>
 <ul>
 <li class="fragment">ashr <span class="citation" data-cites="Stephens2016">(Stephens, 2016)</span>
@@ -819,8 +818,7 @@ res &lt;-<span class="st"> </span><span class="kw">lfcShrink</span>(dds, <span c
 
 <p><strong>Paper and software</strong></p>
 <ul>
-<li><a href="https://doi.org/10.1101/303255">apeglm preprint</a> on bioRxiv</li>
-<li>with ZINB single cell simulation, bimodal LFC dist’n</li>
+<li><a href="https://doi.org/10.1101/303255">apeglm preprint</a> on bioRxiv (accepted at <em>Bioinformatics</em>)</li>
 <li><code>lfcShrink(dds, coef=2, type=&quot;apeglm&quot;)</code></li>
 <li><code>lfcShrink(dds, coef=2, type=&quot;ashr&quot;)</code></li>
 </ul>
