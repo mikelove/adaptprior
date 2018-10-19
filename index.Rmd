@@ -94,11 +94,10 @@ $$ \beta_g \equiv \log_2 \left( \frac{\mu_{gY}}{\mu_{gX}} \right) $$
 [9] ZI weights [@Berge2018]
 </small>
 
-## Start with simple
+## Effect size in simulated data
 
-* Simple simulation of count data (Negative Binomial)
-* 2500 genes, 5 vs 5 replicates
-* Dispersion ~ mean trend
+* Simulation of over-dispersed count data 
+* 2500 "genes", 5 vs 5 replicates
 
 ## Effect size over mean ("MA" or Bland-Altman)
 
@@ -134,25 +133,28 @@ big.text <- theme(axis.text=element_text(size=14),
                   axis.title=element_text(size=18),
                   legend.text=element_text(size=14),
                   legend.title=element_text(size=16))
+rgb2 <- function(x,y,z) rgb(x,y,z,maxColorValue=255)
+my.cols <- scale_color_manual(values=cols)
+cols <- c(rgb2(230,159,0),rgb2(86,180,233),rgb2(0,158,115),rgb2(0,114,178))
 ggplot(dat, aes(x=log10mean, y=log2FC, col=category)) +
-  geom_point(alpha=.3,size=2) +
-  ylim(-5,5) + geom_hline(yintercept=0, col="black") + big.text
+  geom_point(size=2) + ylim(-5,5) + geom_hline(yintercept=0, col="black") +
+  my.cols + big.text
 ```
 
 ## Estimate over truth
 
 ```{r scatter}
-ggplot(dat, aes(x=true, y=log2FC, col=category)) + geom_point(alpha=.3,size=2) +
+ggplot(dat, aes(x=true, y=log2FC, col=category)) + geom_point(size=2) +
   geom_abline(intercept=0, slope=1, col="black") +
-  ylim(-3,3) + big.text
+  ylim(-3,3) + my.cols + big.text
 ```
 
 ## Faceted by mean
 
 ```{r facet}
-ggplot(dat, aes(x=true, y=log2FC, col=category)) + geom_point(alpha=.3,size=2) +
+ggplot(dat, aes(x=true, y=log2FC, col=category)) + geom_point(size=2) +
   geom_abline(intercept=0, slope=1, col="black") + facet_wrap(~category) +
-  ylim(-3,3) + big.text
+  ylim(-3,3) + my.cols + big.text
 ```
 
 ## Pseudocount 1
@@ -160,9 +162,9 @@ ggplot(dat, aes(x=true, y=log2FC, col=category)) + geom_point(alpha=.3,size=2) +
 ```{r facet1}
 yvar <- "pseudocount.1"
 ggplot(dat, aes_string(x="true", y=yvar, col="category")) +
-  geom_point(alpha=.3,size=2) +
+  geom_point(size=2) +
   geom_abline(intercept=0, slope=1, col="black") +
-  facet_wrap(~category) + ylim(-3,3) + big.text
+  facet_wrap(~category) + ylim(-3,3) + my.cols + big.text
 ```
 
 ## Pseudocount 5
@@ -170,9 +172,9 @@ ggplot(dat, aes_string(x="true", y=yvar, col="category")) +
 ```{r facet5}
 yvar <- "pseudocount.5"
 ggplot(dat, aes_string(x="true", y=yvar, col="category")) +
-  geom_point(alpha=.3,size=2) +
+  geom_point(size=2) +
   geom_abline(intercept=0, slope=1, col="black") +
-  facet_wrap(~category) + ylim(-3,3) + big.text
+  facet_wrap(~category) + ylim(-3,3) + my.cols + big.text
 ```
 
 ## Normal prior
@@ -180,23 +182,27 @@ ggplot(dat, aes_string(x="true", y=yvar, col="category")) +
 ```{r facetNormal}
 yvar <- "Normal.prior"
 ggplot(dat, aes_string(x="true", y=yvar, col="category")) +
-  geom_point(alpha=.3,size=2) +
+  geom_point(size=2) +
   geom_abline(intercept=0, slope=1, col="black") +
-  facet_wrap(~category) + ylim(-3,3) + big.text
+  facet_wrap(~category) + ylim(-3,3) + my.cols + big.text
 ```
 
 ## Pseudocount 5
 
 ```{r scatter5}
-ggplot(dat, aes(x=true, y=pseudocount.5, col=category)) + geom_point(alpha=.3,size=2) +
-  geom_abline(intercept=0, slope=1, col="black") + ylim(-3,3) + big.text
+ggplot(dat, aes(x=true, y=pseudocount.5, col=category)) +
+  geom_point(size=2) +
+  geom_abline(intercept=0, slope=1, col="black") + ylim(-3,3) +
+  my.cols + big.text
 ```
 
 ## Normal prior
 
 ```{r scatterNormal}
-ggplot(dat, aes(x=true, y=Normal.prior, col=category)) + geom_point(alpha=.3,size=2) +
-  geom_abline(intercept=0, slope=1, col="black") + ylim(-3,3) + big.text
+ggplot(dat, aes(x=true, y=Normal.prior, col=category)) +
+  geom_point(size=2) +
+  geom_abline(intercept=0, slope=1, col="black") + ylim(-3,3) +
+  my.cols + big.text
 ```
 
 ## What do we see
