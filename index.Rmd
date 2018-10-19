@@ -1,7 +1,12 @@
 ---
-title: "Adaptive priors for genomic data"
-author: Michael Love
+title: "Adaptive priors for estimating effect size with genomic data"
+author: |
+  | Michael Love
+  | Dept. of Biostatistics
+  | Dept. of Genetics
+  | UNC-Chapel Hill
 bibliography: library.bib
+csl: apa.csl
 output: 
   revealjs::revealjs_presentation:
     highlight: tango
@@ -76,13 +81,14 @@ $$ \beta_g \equiv \log_2 \left( \frac{\mu_{gY}}{\mu_{gX}} \right) $$
 
 ## Complexities
 
-* Counts $X_{gi}$ and $Y_{gi}$ are actually estimated [1-3]
-* Technical artifacts: per-sample scaling factor / offset [4-5]
-* Negative Binomial widely used
-    - dispersion parameter must be estimated [6-8]
-	- zero component for highly amplified data [9]
+> * Counts $X_{gi}$ and $Y_{gi}$ are actually estimated [1-3]
+> * Technical artifacts: per-sample scaling factor / offset [4-5]
+> * Negative Binomial widely used
+>     - dispersion parameter must be estimated [6-8]
+>     - zero component for highly amplified data [9]
 
 <small>
+**References** <br/>
 [1] Issue of DGE [@Trapnell2013] <br/>
 [2] Bias models [@Patro2017], <br/>
 [3] Isoform offset [@Soneson2015], <br/>
@@ -121,7 +127,7 @@ grp2 <- rowMeans(counts(dds)[,(m/2 + 1):m])
 
 ```{r ma}
 dat <- data.frame(log10mean=log10(.5 * (grp1 + grp2)),
-                  log2FC=log2(grp2/grp1),
+                  log2FoldChange=log2(grp2/grp1),
                   pseudocount.1=log2(grp2+1) - log2(grp1+1),
                   pseudocount.5=log2(grp2+5) - log2(grp1+5),
                   Normal.prior=normal,
@@ -136,7 +142,7 @@ big.text <- theme(axis.text=element_text(size=14),
 rgb2 <- function(x,y,z) rgb(x,y,z,maxColorValue=255)
 my.cols <- scale_color_manual(values=cols)
 cols <- c(rgb2(230,159,0),rgb2(86,180,233),rgb2(0,158,115),rgb2(0,114,178))
-ggplot(dat, aes(x=log10mean, y=log2FC, col=category)) +
+ggplot(dat, aes(x=log10mean, y=log2FoldChange, col=category)) +
   geom_point(size=2) + ylim(-5,5) + geom_hline(yintercept=0, col="black") +
   my.cols + big.text
 ```
@@ -144,7 +150,7 @@ ggplot(dat, aes(x=log10mean, y=log2FC, col=category)) +
 ## Estimate over truth
 
 ```{r scatter}
-ggplot(dat, aes(x=true, y=log2FC, col=category)) + geom_point(size=2) +
+ggplot(dat, aes(x=true, y=log2FoldChange, col=category)) + geom_point(size=2) +
   geom_abline(intercept=0, slope=1, col="black") +
   ylim(-3,3) + my.cols + big.text
 ```
@@ -152,7 +158,7 @@ ggplot(dat, aes(x=true, y=log2FC, col=category)) + geom_point(size=2) +
 ## Faceted by mean
 
 ```{r facet}
-ggplot(dat, aes(x=true, y=log2FC, col=category)) + geom_point(size=2) +
+ggplot(dat, aes(x=true, y=log2FoldChange, col=category)) + geom_point(size=2) +
   geom_abline(intercept=0, slope=1, col="black") + facet_wrap(~category) +
   ylim(-3,3) + my.cols + big.text
 ```
@@ -179,7 +185,7 @@ ggplot(dat, aes_string(x="true", y=yvar, col="category")) +
 
 ## Normal prior
 
-```{r facetNormal}
+```{r facet-normal}
 yvar <- "Normal.prior"
 ggplot(dat, aes_string(x="true", y=yvar, col="category")) +
   geom_point(size=2) +
@@ -198,7 +204,7 @@ ggplot(dat, aes(x=true, y=pseudocount.5, col=category)) +
 
 ## Normal prior
 
-```{r scatterNormal}
+```{r scatter-normal}
 ggplot(dat, aes(x=true, y=Normal.prior, col=category)) +
   geom_point(size=2) +
   geom_abline(intercept=0, slope=1, col="black") + ylim(-3,3) +
@@ -210,7 +216,7 @@ ggplot(dat, aes(x=true, y=Normal.prior, col=category)) +
 <div class="container">
 
 <div class="col">
-<img width=400 src="index_files/figure-revealjs/scatterNormal-1.png">
+<img width=400 src="index_files/figure-revealjs/scatter-normal-1.png">
 </div>
 
 <div class="col">
@@ -236,7 +242,7 @@ dds <- DESeqDataSet(gse, ~batch + condition)
 # variance stabilization for PCA, etc.
 vsd <- vst(dds)
 
-# scaling factors, dispersion, MLE log2FC
+# scaling factors, dispersion, MLE LFC
 dds <- DESeq(dds)
 
 # shrinkage estimation
@@ -245,12 +251,12 @@ res <- lfcShrink(dds, coef=3)
 
 ## Look at real LFC distribution
 
-* Highly replicated yeast dataset [@Schurch2016]
-* 42 vs 44 biological replicates
-* $\Delta snf2$ mutant
-    - Catalytic component of the SWI/SNF complex
-    - Chromatin-remodeling 
-    - \+ and - regulation of a large number of genes
+> * Highly replicated yeast dataset [@Schurch2016]
+> * 42 vs 44 biological replicates
+> * $\Delta snf2$ mutant
+>     - Catalytic component of the SWI/SNF complex
+>     - Chromatin-remodeling 
+>     - \+ and - regulation of a large number of genes
 
 ## LFC in highly replicated yeast
 
@@ -265,36 +271,278 @@ res.df$ymax <- with(res.df, log2FoldChange + 2*lfcSE)
 ggplot(res.df, aes(log10mean, log2FoldChange, col=FDR.05)) +
   geom_point(alpha=.3) +
   geom_hline(yintercept=0, col="red") +
-  scale_color_manual(values=c("black", "red"))
+  scale_color_manual(values=c("black", "red")) + big.text
 ```
 
 ## LFC with 2x SE (1700 black, 5100 red)
 
-```{r yeast-ma2, echo=FALSE}
+```{r yeast-ma2, echo=FALSE, out.width=630, out.height=450}
 ggplot(res.df, aes(log10mean, log2FoldChange, col=FDR.05, ymin=ymin, ymax=ymax)) +
   geom_point(alpha=.3) + geom_errorbar(alpha=.3) + 
-  geom_hline(yintercept=0, col="red") + xlim(2,6) + ylim(-2,2) +
-  scale_color_manual(values=c("black", "red"))
+  geom_hline(yintercept=0, col="red") +
+  coord_cartesian(xlim=c(0,5), ylim=c(-2,2)) + 
+  scale_color_manual(values=c("black", "red")) + big.text
 ```
 
-## Problems with the Normal prior
+\* Actually, $y=0$ not trivial to determine here
 
-## ashr prior
+## How the Normal prior is implemented 
 
-## apeglm prior
+> * Consider all of MLE coefficients, $\hat{\beta}_g$
+> * Want to adapt prior to the spread of these
+> * Inverse weight by variance of log counts, $1/\bar{\mu}_g + \alpha_{tr}(\bar{\mu}_g)$
+> * Normal has thin tails
+> * Pick a Normal to match the upper 5% *weighted* quantile
 
-## Issues with estimating scale
+[@Love2014]
 
-## Performance on the yeast data
+## Alternative adaptive priors with heavy tails
 
-## Performance on simulated data
+<img width=300 src="andean_cat.jpg">
 
-## ZINB likelihood
+> * ashr [@Stephens2016]
+>     - $\pi_0 \delta_0 + \sum_{k=1}^K \pi_k N(\cdot; 0, \sigma_k^2)$
+>     - $\sigma_1, \dots, \sigma_k$ a large, dense, fixed grid
+> * apeglm [@Zhu2018]
+>     - Cauchy prior with scale parameter $S$
 
-## Dispersion prior
+## Previous work on LFC shrinkage in RNA-seq
+
+* ShrinkBayes [@vandewiel2012;@vandewiel2014]
+    - shrinkage of many parameters simultaneously
+    - non-equal mixture proportions for + and - effects
+	- spike + parametric,  spike + non-parametric
+    - Integrated Nested Laplace Approximation `INLA`
+
+## Method details
+
+> * ashr:
+>     - set $\sigma_k$ grid based on min $\hat{s}_g$ and max $\hat{\beta}_g^2 - \hat{s}_g^2$
+>     - estimate $\pi_k$ using $\hat{\beta}_g$ and $\hat{s}_g$
+>     - $P(\hat{\beta}_g | \beta_g, \hat{s}_g) = N(\hat{\beta}_g; \beta_g, \hat{s}_g^2)$
+>     - return the posterior mean, SD, FSR
+> * apeglm: 
+>     - set the scale $S$ of Cauchy using $\hat{\beta}_g$ and $\hat{s}_g$
+>     - shrink only one coefficient at a time
+>     - use data $Y_g$, parameters $\theta_g$, likelihood (NB, ZINB, etc.)
+>     - return the posterior mode, SD, profile posterior intervals
+
+## Connection to `bayesglm`
+
+> * Uses a 2.5 scale Cauchy prior on non-constant coefficients
+> * Posterior mode and SE via an approximate EM within IRLS
+> * "*want something better than the unstable estimates produced by the current default - maximum likelihood*"
+> * "*[Cauchy] allows for occasional large coefficients while still performing a reasonable amount of shrinkage for coefficients near zero*"
+
+[@Gelman2008]
+
+## Connection to `bayesglm`
+
+Cauchy can be modeled as a mixture of Normals:
+
+$$ \beta \sim N(\mu, \sigma^2) $$
+
+$$ \sigma^2 \sim \textrm{Scale-inv-} \chi^2(\nu, S^2) $$
+
+* Within IRLS, perform an EM step
+* Treat $\beta$ as missing data, estimate $\sigma$
+
+[@Gelman2008]
+
+## `apeglm` implementation
+
+**A**pproximate **P**osterior **E**stimation for **GLM**
+
+* Prior fit to $\hat{\beta}_g$ and $\hat{s}_g$, details on next slide
+* Treat dispersion parameter as fixed
+* C++ version of L-BFGS-B to obtain posterior mode [1]
+* `optim` to obtain Hessian for Laplace approximation [2]
+* [1] takes < 1 s, [2] takes ~3 s, over e.g. 10k genes
 
 ---
 
-### References
+Solve for $A$ in the following [@EfronMorris]
 
-<font size="-1">
+$A = \sum_{g=1}^G (\hat{\beta}_g^2 - e_g^2) I_g(A) \, / \, \sum_{g=1}^G I_g(A)$
+
+$I_g(a) \equiv 1/[2(a + e_g^2)^2]$
+
+Motivated by the following hierarchical model:
+
+$$ \hat{\beta}_g \sim N(\beta_g, e_g^2) $$
+
+$$ \beta_g \sim N(0, A) $$
+
+> 1. We plug in $\hat{s}_g^2$ for $e_g^2$
+> 2. We use $S = \sqrt{A}$ to scale a *Cauchy* not a *Normal* prior
+
+## Prior scale & False Sign Rate (FSR)
+
+<img src="adaptive_fsr.png">
+
+## Prior scale & estimation error
+
+<img src="adaptive_eif.png">
+
+## Prior scale & estimation error (example)
+
+<img src="adaptive_eif_problem.png">
+
+## Return to yeast example: 3 vs 3 replicates
+
+## Yeast with Normal prior
+
+```{r echo=FALSE}
+load("yeast_res.rda")
+load("yeast_dds.rda")
+idx <- c(which(dds$condition=="WT")[1:3],
+         which(dds$condition=="mut")[1:3])
+dds2 <- dds[,idx]
+dds2 <- DESeq(dds2)
+res2 <- lfcShrink(dds2, coef=2, type="normal")
+sub.df <- data.frame(true=res$log2FoldChange,
+                     Normal.prior=res2$log2FoldChange,
+                     mean=res$baseMean)
+cleanIt <- function(sub.df) {
+  sub.df <- sub.df[!is.na(sub.df$true),]
+  sub.df$type <- factor(ifelse(abs(sub.df$true) < 2, "small.LFC",
+                        ifelse(sub.df$mean < 20, "small.mean",
+                               "large.mean")),
+                        c("small.LFC","small.mean","large.mean"))
+  sub.df
+}
+```
+
+```{r yeast-normal, echo=FALSE}
+yeast_x_axis <- scale_x_continuous(breaks=(-4:2) * 2, limits=c(-8,4))
+yeast_y_axis <- scale_y_continuous(breaks=-4:2 * 2, limits=c(-8,4))
+sub.df <- cleanIt(sub.df)
+ggplot(sub.df, aes(true, Normal.prior, col=type)) +
+  geom_point(alpha=.3, size=3) +
+  geom_abline(slope=1, intercept=0, col="red") +
+  yeast_x_axis + yeast_y_axis + 
+  scale_color_manual(values=c("black", "orange3", "blue")) + big.text
+```
+
+## Yeast with apeglm
+
+```{r yeast-ape, echo=FALSE}
+res2 <- lfcShrink(dds2, coef=2, type="apeglm")
+sub.df <- data.frame(true=res$log2FoldChange,
+                     Cauchy.prior=res2$log2FoldChange,
+                     mean=res$baseMean)
+sub.df <- cleanIt(sub.df)
+ggplot(sub.df, aes(true, Cauchy.prior, col=type)) +
+  geom_point(alpha=.3, size=3) +
+  geom_abline(slope=1, intercept=0, col="red") +
+  yeast_x_axis + yeast_y_axis + 
+  scale_color_manual(values=c("black", "orange3", "blue")) + big.text
+```
+
+## Yeast with ashr
+
+```{r yeast-ashr, echo=FALSE}
+res2 <- lfcShrink(dds2, coef=2, type="ashr")
+sub.df <- data.frame(true=res$log2FoldChange,
+                     ashr.prior=res2$log2FoldChange,
+                     mean=res$baseMean)
+sub.df <- cleanIt(sub.df)
+ggplot(sub.df, aes(true, ashr.prior, col=type)) +
+  geom_point(alpha=.3, size=3) +
+  geom_abline(slope=1, intercept=0, col="red") +
+  yeast_x_axis + yeast_y_axis + 
+  scale_color_manual(values=c("black", "orange3", "blue")) + big.text
+```
+
+## Yeast results: 3 and 5 replicates per group
+
+<img width=750 src="yeast.png">
+
+## Simulation: 5 and 10 replicates per group
+
+<img width=750 src="sim_b.png">
+
+## Simulation: 30 and 50 replicates per group
+
+<img width=750 src="sim_largesize_b.png">
+
+## Problem case for apeglm
+
+---
+
+```{r echo=FALSE}
+m <- 4
+n <- 3200
+dmr <- function(x) 1/x + exp(rnorm(n,log(.05),1))
+set.seed(1)
+betaSD <- rep(c(0,1),c(3000,200))
+dds <- makeExampleDESeqDataSet(m=m, n=n, betaSD=betaSD,
+                               interceptMean=5, interceptSD=4,
+                               dispMeanRel=dmr)
+mcols(dds)$betaSD <- betaSD
+keep <- rowSums(counts(dds) >= 5) >= 3
+keep <- keep & rowMeans(counts(dds)) < 1e4
+dds <- dds[keep,]
+dds <- DESeq(dds, fitType="mean")
+apeglm <- lfcShrink(dds, coef=2, type="apeglm")$log2FoldChange
+ashr <- lfcShrink(dds, coef=2, type="ashr")$log2FoldChange
+dat <- data.frame(log10mean=rep(log10(mcols(dds)$baseMean),2),
+                  estimate=c(apeglm,ashr),
+                  method=rep(c("apeglm","ashr"),each=nrow(dds)),
+                  true=rep(mcols(dds)$trueBeta,2),
+                  category=factor(paste0("betaSD:",rep(mcols(dds)$betaSD,2))))
+```
+
+```{r apeglm-limit, echo=FALSE, fig.width=7, fig.height=3}
+ggplot(dat, aes(x=true, y=estimate, col=category)) +
+  geom_point(alpha=.3,size=2) +
+  geom_abline(slope=1, intercept=0, col="black") +
+  scale_color_manual(values=c("black", "blue")) + 
+  big.text + facet_wrap(~method) + ggtitle("apeglm limitation: n=2 vs 2, spike at 0")
+```
+
+```{r apeglm-limit2, echo=FALSE, fig.width=7, fig.height=3}
+ggplot(dat, aes(x=log10mean, y=estimate, col=category)) +
+  geom_point(alpha=.3,size=2) +
+  big.text + facet_wrap(~method) +
+  scale_color_manual(values=c("black", "blue")) + 
+  ggtitle("apeglm limitation: n=2 vs 2, spike at 0")
+```
+
+---
+
+**Paper and software**
+
+* [apeglm preprint](https://doi.org/10.1101/303255) on bioRxiv 
+* with ZINB single cell simulation, bimodal LFC dist'n
+* `lfcShrink(dds, coef=2, type="apeglm")`
+* `lfcShrink(dds, coef=2, type="ashr")`
+
+**Acknowledgments**
+
+* Work by **Anqi Zhu** and Joseph Ibrahim
+* Comments from Wolfgang Huber and Cecile Le Sueur 
+* Funding:
+    - MIL - R01 HG009125, P01 CA142538, P30 ES010126
+    - JGI and AZ - R01 GM070335 and P01 CA142538
+
+<!--
+## Connection to Bayesian methods
+
+* baySeq
+* ShrinkBayes
+
+## Connection to dispersion prior
+
+* DSS
+* DESeq2
+
+## Student's t as dispersion prior
+
+* new paper
+-->
+
+---
+
+<font size="-2">
+

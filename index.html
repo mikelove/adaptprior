@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="pandoc">
+  <title>Adaptive priors for estimating effect size with genomic data</title>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+  <link rel="stylesheet" href="index_files/reveal.js-3.3.0.1/css/reveal.css"/>
+
+
+<style type="text/css">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; background-color: #f8f8f8; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+pre, code { background-color: #f8f8f8; }
+code > span.kw { color: #204a87; font-weight: bold; } /* Keyword */
+code > span.dt { color: #204a87; } /* DataType */
+code > span.dv { color: #0000cf; } /* DecVal */
+code > span.bn { color: #0000cf; } /* BaseN */
+code > span.fl { color: #0000cf; } /* Float */
+code > span.ch { color: #4e9a06; } /* Char */
+code > span.st { color: #4e9a06; } /* String */
+code > span.co { color: #8f5902; font-style: italic; } /* Comment */
+code > span.ot { color: #8f5902; } /* Other */
+code > span.al { color: #ef2929; } /* Alert */
+code > span.fu { color: #000000; } /* Function */
+code > span.er { color: #a40000; font-weight: bold; } /* Error */
+code > span.wa { color: #8f5902; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #000000; } /* Constant */
+code > span.sc { color: #000000; } /* SpecialChar */
+code > span.vs { color: #4e9a06; } /* VerbatimString */
+code > span.ss { color: #4e9a06; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #000000; } /* Variable */
+code > span.cf { color: #204a87; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #ce5c00; font-weight: bold; } /* Operator */
+code > span.pp { color: #8f5902; font-style: italic; } /* Preprocessor */
+code > span.ex { } /* Extension */
+code > span.at { color: #c4a000; } /* Attribute */
+code > span.do { color: #8f5902; font-weight: bold; font-style: italic; } /* Documentation */
+code > span.an { color: #8f5902; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #8f5902; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #8f5902; font-weight: bold; font-style: italic; } /* Information */
+</style>
+
+<link rel="stylesheet" href="index_files/reveal.js-3.3.0.1/css/theme/simple.css" id="theme">
+
+
+  <!-- some tweaks to reveal css -->
+  <style type="text/css">
+    .reveal h1 { font-size: 2.0em; }
+    .reveal h2 { font-size: 1.5em;  }
+    .reveal h3 { font-size: 1.25em;	}
+    .reveal h4 { font-size: 1em;	}
+
+    .reveal .slides>section,
+    .reveal .slides>section>section {
+      padding: 0px 0px;
+    }
+
+
+
+    .reveal table {
+      border-width: 1px;
+      border-spacing: 2px;
+      border-style: dotted;
+      border-color: gray;
+      border-collapse: collapse;
+      font-size: 0.7em;
+    }
+
+    .reveal table th {
+      border-width: 1px;
+      padding-left: 10px;
+      padding-right: 25px;
+      font-weight: bold;
+      border-style: dotted;
+      border-color: gray;
+    }
+
+    .reveal table td {
+      border-width: 1px;
+      padding-left: 10px;
+      padding-right: 25px;
+      border-style: dotted;
+      border-color: gray;
+    }
+
+
+  </style>
+
+    <style type="text/css">code{white-space: pre;}</style>
+
+
+<!-- Printing and PDF exports -->
+<script id="paper-css" type="application/dynamic-css">
+
+/* Default Print Stylesheet Template
+   by Rob Glazebrook of CSSnewbie.com
+   Last Updated: June 4, 2008
+
+   Feel free (nay, compelled) to edit, append, and
+   manipulate this file as you see fit. */
+
+
+@media print {
+
+	/* SECTION 1: Set default width, margin, float, and
+	   background. This prevents elements from extending
+	   beyond the edge of the printed page, and prevents
+	   unnecessary background images from printing */
+	html {
+		background: #fff;
+		width: auto;
+		height: auto;
+		overflow: visible;
+	}
+	body {
+		background: #fff;
+		font-size: 20pt;
+		width: auto;
+		height: auto;
+		border: 0;
+		margin: 0 5%;
+		padding: 0;
+		overflow: visible;
+		float: none !important;
+	}
+
+	/* SECTION 2: Remove any elements not needed in print.
+	   This would include navigation, ads, sidebars, etc. */
+	.nestedarrow,
+	.controls,
+	.fork-reveal,
+	.share-reveal,
+	.state-background,
+	.reveal .progress,
+	.reveal .backgrounds {
+		display: none !important;
+	}
+
+	/* SECTION 3: Set body font face, size, and color.
+	   Consider using a serif font for readability. */
+	body, p, td, li, div {
+		font-size: 20pt!important;
+		font-family: Georgia, "Times New Roman", Times, serif !important;
+		color: #000;
+	}
+
+	/* SECTION 4: Set heading font face, sizes, and color.
+	   Differentiate your headings from your body text.
+	   Perhaps use a large sans-serif for distinction. */
+	h1,h2,h3,h4,h5,h6 {
+		color: #000!important;
+		height: auto;
+		line-height: normal;
+		font-family: Georgia, "Times New Roman", Times, serif !important;
+		text-shadow: 0 0 0 #000 !important;
+		text-align: left;
+		letter-spacing: normal;
+	}
+	/* Need to reduce the size of the fonts for printing */
+	h1 { font-size: 28pt !important;  }
+	h2 { font-size: 24pt !important; }
+	h3 { font-size: 22pt !important; }
+	h4 { font-size: 22pt !important; font-variant: small-caps; }
+	h5 { font-size: 21pt !important; }
+	h6 { font-size: 20pt !important; font-style: italic; }
+
+	/* SECTION 5: Make hyperlinks more usable.
+	   Ensure links are underlined, and consider appending
+	   the URL to the end of the link for usability. */
+	a:link,
+	a:visited {
+		color: #000 !important;
+		font-weight: bold;
+		text-decoration: underline;
+	}
+	/*
+	.reveal a:link:after,
+	.reveal a:visited:after {
+		content: " (" attr(href) ") ";
+		color: #222 !important;
+		font-size: 90%;
+	}
+	*/
+
+
+	/* SECTION 6: more reveal.js specific additions by @skypanther */
+	ul, ol, div, p {
+		visibility: visible;
+		position: static;
+		width: auto;
+		height: auto;
+		display: block;
+		overflow: visible;
+		margin: 0;
+		text-align: left !important;
+	}
+	.reveal pre,
+	.reveal table {
+		margin-left: 0;
+		margin-right: 0;
+	}
+	.reveal pre code {
+		padding: 20px;
+		border: 1px solid #ddd;
+	}
+	.reveal blockquote {
+		margin: 20px 0;
+	}
+	.reveal .slides {
+		position: static !important;
+		width: auto !important;
+		height: auto !important;
+
+		left: 0 !important;
+		top: 0 !important;
+		margin-left: 0 !important;
+		margin-top: 0 !important;
+		padding: 0 !important;
+		zoom: 1 !important;
+
+		overflow: visible !important;
+		display: block !important;
+
+		text-align: left !important;
+		-webkit-perspective: none;
+		   -moz-perspective: none;
+		    -ms-perspective: none;
+		        perspective: none;
+
+		-webkit-perspective-origin: 50% 50%;
+		   -moz-perspective-origin: 50% 50%;
+		    -ms-perspective-origin: 50% 50%;
+		        perspective-origin: 50% 50%;
+	}
+	.reveal .slides section {
+		visibility: visible !important;
+		position: static !important;
+		width: auto !important;
+		height: auto !important;
+		display: block !important;
+		overflow: visible !important;
+
+		left: 0 !important;
+		top: 0 !important;
+		margin-left: 0 !important;
+		margin-top: 0 !important;
+		padding: 60px 20px !important;
+		z-index: auto !important;
+
+		opacity: 1 !important;
+
+		page-break-after: always !important;
+
+		-webkit-transform-style: flat !important;
+		   -moz-transform-style: flat !important;
+		    -ms-transform-style: flat !important;
+		        transform-style: flat !important;
+
+		-webkit-transform: none !important;
+		   -moz-transform: none !important;
+		    -ms-transform: none !important;
+		        transform: none !important;
+
+		-webkit-transition: none !important;
+		   -moz-transition: none !important;
+		    -ms-transition: none !important;
+		        transition: none !important;
+	}
+	.reveal .slides section.stack {
+		padding: 0 !important;
+	}
+	.reveal section:last-of-type {
+		page-break-after: avoid !important;
+	}
+	.reveal section .fragment {
+		opacity: 1 !important;
+		visibility: visible !important;
+
+		-webkit-transform: none !important;
+		   -moz-transform: none !important;
+		    -ms-transform: none !important;
+		        transform: none !important;
+	}
+	.reveal section img {
+		display: block;
+		margin: 15px 0px;
+		background: rgba(255,255,255,1);
+		border: 1px solid #666;
+		box-shadow: none;
+	}
+
+	.reveal section small {
+		font-size: 0.8em;
+	}
+
+}  
+</script>
+
+
+<script id="pdf-css" type="application/dynamic-css">
+    
+/**
+ * This stylesheet is used to print reveal.js
+ * presentations to PDF.
+ *
+ * https://github.com/hakimel/reveal.js#pdf-export
+ */
+
+* {
+	-webkit-print-color-adjust: exact;
+}
+
+body {
+	margin: 0 auto !important;
+	border: 0;
+	padding: 0;
+	float: none !important;
+	overflow: visible;
+}
+
+html {
+	width: 100%;
+	height: 100%;
+	overflow: visible;
+}
+
+/* Remove any elements not needed in print. */
+.nestedarrow,
+.reveal .controls,
+.reveal .progress,
+.reveal .playback,
+.reveal.overview,
+.fork-reveal,
+.share-reveal,
+.state-background {
+	display: none !important;
+}
+
+h1, h2, h3, h4, h5, h6 {
+	text-shadow: 0 0 0 #000 !important;
+}
+
+.reveal pre code {
+	overflow: hidden !important;
+	font-family: Courier, 'Courier New', monospace !important;
+}
+
+ul, ol, div, p {
+	visibility: visible;
+	position: static;
+	width: auto;
+	height: auto;
+	display: block;
+	overflow: visible;
+	margin: auto;
+}
+.reveal {
+	width: auto !important;
+	height: auto !important;
+	overflow: hidden !important;
+}
+.reveal .slides {
+	position: static;
+	width: 100%;
+	height: auto;
+
+	left: auto;
+	top: auto;
+	margin: 0 !important;
+	padding: 0 !important;
+
+	overflow: visible;
+	display: block;
+
+	-webkit-perspective: none;
+	   -moz-perspective: none;
+	    -ms-perspective: none;
+	        perspective: none;
+
+	-webkit-perspective-origin: 50% 50%; /* there isn't a none/auto value but 50-50 is the default */
+	   -moz-perspective-origin: 50% 50%;
+	    -ms-perspective-origin: 50% 50%;
+	        perspective-origin: 50% 50%;
+}
+
+.reveal .slides section {
+	page-break-after: always !important;
+
+	visibility: visible !important;
+	position: relative !important;
+	display: block !important;
+	position: relative !important;
+
+	margin: 0 !important;
+	padding: 0 !important;
+	box-sizing: border-box !important;
+	min-height: 1px;
+
+	opacity: 1 !important;
+
+	-webkit-transform-style: flat !important;
+	   -moz-transform-style: flat !important;
+	    -ms-transform-style: flat !important;
+	        transform-style: flat !important;
+
+	-webkit-transform: none !important;
+	   -moz-transform: none !important;
+	    -ms-transform: none !important;
+	        transform: none !important;
+}
+
+.reveal section.stack {
+	margin: 0 !important;
+	padding: 0 !important;
+	page-break-after: avoid !important;
+	height: auto !important;
+	min-height: auto !important;
+}
+
+.reveal img {
+	box-shadow: none;
+}
+
+.reveal .roll {
+	overflow: visible;
+	line-height: 1em;
+}
+
+/* Slide backgrounds are placed inside of their slide when exporting to PDF */
+.reveal section .slide-background {
+	display: block !important;
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	z-index: -1;
+}
+
+/* All elements should be above the slide-background */
+.reveal section>* {
+	position: relative;
+	z-index: 1;
+}
+
+/* Display slide speaker notes when 'showNotes' is enabled */
+.reveal .speaker-notes-pdf {
+	display: block;
+	width: 100%;
+	max-height: none;
+	left: auto;
+	top: auto;
+	z-index: 100;
+}
+
+/* Display slide numbers when 'slideNumber' is enabled */
+.reveal .slide-number-pdf {
+	display: block;
+	position: absolute;
+	font-size: 14px;
+}
+
+</script>
+
+
+<script>
+var style = document.createElement( 'style' );
+style.type = 'text/css';
+var style_script_id = window.location.search.match( /print-pdf/gi ) ? 'pdf-css' : 'paper-css';
+var style_script = document.getElementById(style_script_id).text;
+style.innerHTML = style_script;
+document.getElementsByTagName('head')[0].appendChild(style);
+</script>
+
+</head>
+<body>
+  <div class="reveal">
+    <div class="slides">
+
+<section>
+    <h1 class="title">Adaptive priors for estimating effect size with genomic data</h1>
+    <h2 class="author"><div style="white-space: pre-line;">Michael Love
+Dept. of Biostatistics
+Dept. of Genetics
+UNC-Chapel Hill</div></h2>
+</section>
+
+<section id="work-in-collaboration-with" class="slide level2">
+<h2>Work in collaboration with</h2>
+<ul>
+<li>Anqi Zhu (UNC-CH)</li>
+<li>Joseph Ibrahim (UNC-CH)</li>
+</ul>
+<style>
+.container{
+    display: flex;
+}
+.col{
+    flex: 1;
+}
+</style>
+</section>
+<section id="aims-and-activity-of-the-love-lab" class="slide level2">
+<h2>Aims and activity of the <a href="https://mikelove.github.io">Love lab</a></h2>
+<p><img height=100 src="rlogo.png"> <img height=100 src="bioconductorlogo.jpg"></p>
+<ul>
+<li>Robust, extensible software for genomic data science</li>
+<li>Statistical method development</li>
+<li>Reproducible research and workflows</li>
+<li>Collaborations: Genetics, Biology, CS, Statistics</li>
+</ul>
+</section>
+<section id="our-starting-point" class="slide level2">
+<h2>Our starting point</h2>
+<ul>
+<li>In genomic data analysis, we often begin with plots</li>
+<li>Crucial for high dimensional analysis:
+<ul>
+<li>effect size over mean</li>
+<li>within-group variance over mean</li>
+<li>systematic variation (boxplots, PCA)</li>
+</ul></li>
+</ul>
+</section>
+<section id="gene-expression" class="slide level2">
+<h2>Gene expression</h2>
+<ul>
+<li>Many collaborations around gene expression:
+<ul>
+<li>adipose tissue (T2D)*</li>
+<li>progenitor neurons (autism, schizophrenia)*</li>
+<li>colon (IBD)*</li>
+<li>macrophage (arthritis)*</li>
+<li>breast tumor</li>
+<li>upper airway and lung (HIV)</li>
+</ul></li>
+<li>Often, a <em>counting</em> technology
+<ul>
+<li>Sequencing of cDNA fragments</li>
+<li>Nanostring</li>
+</ul></li>
+</ul>
+<p>* also interested in chromatin accessibility or structure</p>
+</section>
+<section id="often-interested-in-log-fold-change" class="slide level2">
+<h2>Often, interested in log fold change</h2>
+<p>Expression of <span class="math inline">\(G\)</span> genes, 5 replicates in 2 groups:</p>
+<p><span class="math display">\[[X_{g1}, \dots, X_{g5}] \quad \textrm{vs} \quad [Y_{g1}, \dots, Y_{g5}]\]</span></p>
+<p><span class="math display">\[ E(X_{gi}) = \mu_{gX} \]</span></p>
+<p><span class="math display">\[ E(Y_{gi}) = \mu_{gY} \]</span></p>
+<p><span class="math display">\[ \beta_g \equiv \log_2 \left( \frac{\mu_{gY}}{\mu_{gX}} \right) \]</span></p>
+</section>
+<section id="complexities" class="slide level2">
+<h2>Complexities</h2>
+<ul>
+<li class="fragment">Counts <span class="math inline">\(X_{gi}\)</span> and <span class="math inline">\(Y_{gi}\)</span> are actually estimated [1-3]</li>
+<li class="fragment">Technical artifacts: per-sample scaling factor / offset [4-5]</li>
+<li class="fragment">Negative Binomial widely used
+<ul>
+<li class="fragment">dispersion parameter must be estimated [6-8]</li>
+<li class="fragment">zero component for highly amplified data [9]</li>
+</ul></li>
+</ul>
+<p><small> <strong>References</strong> <br/> [1] Issue of DGE <span class="citation" data-cites="Trapnell2013">(Trapnell et al., 2013)</span> <br/> [2] Bias models <span class="citation" data-cites="Patro2017">(Patro, Duggal, Love, Irizarry, &amp; Kingsford, 2017)</span>, <br/> [3] Isoform offset <span class="citation" data-cites="Soneson2015">(Soneson, Love, &amp; Robinson, 2015)</span>, <br/> [4] TMM <span class="citation" data-cites="Robinson2010">(M. D. Robinson &amp; Oshlack, 2010)</span>, <br/> [5] Median ratio <span class="citation" data-cites="Anders2010">(Anders &amp; Huber, 2010)</span>, <br/> [6] edgeR GLM <span class="citation" data-cites="McCarthy2012">(McCarthy, Chen, &amp; Smyth, 2012)</span>, <br/> [7] DSS <span class="citation" data-cites="Wu2012">(H. Wu, Wang, &amp; Wu, 2012)</span>, <br/> [8] DESeq2 <span class="citation" data-cites="Love2014">(Love, Huber, &amp; Anders, 2014)</span>, <br/> [9] ZI weights <span class="citation" data-cites="Berge2018">(Van den Berge et al., 2018)</span> </small></p>
+</section>
+<section id="start-with-simple" class="slide level2">
+<h2>Start with simple</h2>
+<ul>
+<li>Simple simulation of count data (Negative Binomial)</li>
+<li>2500 genes, 5 vs 5 replicates</li>
+<li>Dispersion ~ mean trend</li>
+</ul>
+</section>
+<section id="effect-size-over-mean-ma-or-bland-altman" class="slide level2">
+<h2>Effect size over mean (“MA” or Bland-Altman)</h2>
+<p><img src="index_files/figure-revealjs/ma-1.png" width="768" /></p>
+</section>
+<section id="estimate-over-truth" class="slide level2">
+<h2>Estimate over truth</h2>
+<p><img src="index_files/figure-revealjs/scatter-1.png" width="768" /></p>
+</section>
+<section id="faceted-by-mean" class="slide level2">
+<h2>Faceted by mean</h2>
+<p><img src="index_files/figure-revealjs/facet-1.png" width="768" /></p>
+</section>
+<section id="pseudocount-1" class="slide level2">
+<h2>Pseudocount 1</h2>
+<p><img src="index_files/figure-revealjs/facet1-1.png" width="768" /></p>
+</section>
+<section id="pseudocount-5" class="slide level2">
+<h2>Pseudocount 5</h2>
+<p><img src="index_files/figure-revealjs/facet5-1.png" width="768" /></p>
+</section>
+<section id="normal-prior" class="slide level2">
+<h2>Normal prior</h2>
+<p><img src="index_files/figure-revealjs/facet-normal-1.png" width="768" /></p>
+</section>
+<section id="pseudocount-5-1" class="slide level2">
+<h2>Pseudocount 5</h2>
+<p><img src="index_files/figure-revealjs/scatter5-1.png" width="768" /></p>
+</section>
+<section id="normal-prior-1" class="slide level2">
+<h2>Normal prior</h2>
+<p><img src="index_files/figure-revealjs/scatter-normal-1.png" width="768" /></p>
+</section>
+<section id="what-do-we-see" class="slide level2">
+<h2>What do we see</h2>
+<div class="container">
+<div class="col">
+<p><img width=400 src="index_files/figure-revealjs/scatter-normal-1.png"></p>
+</div>
+<div class="col">
+<p><br/></p>
+<ul>
+<li>Reduced variance</li>
+<li>Genes can be ranked</li>
+<li>Moderate bias</li>
+</ul>
+</div>
+</div>
+</section>
+<section id="simplify-statistical-routines" class="slide level2">
+<h2>Simplify statistical routines</h2>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># import the counts</span>
+se &lt;-<span class="st"> </span><span class="kw">tximeta</span>(samples)
+gse &lt;-<span class="st"> </span><span class="kw">summarizeToGene</span>(se)
+
+<span class="co"># make a dataset</span>
+dds &lt;-<span class="st"> </span><span class="kw">DESeqDataSet</span>(gse, <span class="op">~</span>batch <span class="op">+</span><span class="st"> </span>condition)
+
+<span class="co"># variance stabilization for PCA, etc.</span>
+vsd &lt;-<span class="st"> </span><span class="kw">vst</span>(dds)
+
+<span class="co"># scaling factors, dispersion, MLE LFC</span>
+dds &lt;-<span class="st"> </span><span class="kw">DESeq</span>(dds)
+
+<span class="co"># shrinkage estimation</span>
+res &lt;-<span class="st"> </span><span class="kw">lfcShrink</span>(dds, <span class="dt">coef=</span><span class="dv">3</span>)</code></pre></div>
+</section>
+<section id="look-at-real-lfc-distribution" class="slide level2">
+<h2>Look at real LFC distribution</h2>
+<ul>
+<li class="fragment">Highly replicated yeast dataset <span class="citation" data-cites="Schurch2016">(Schurch et al., 2016)</span></li>
+<li class="fragment">42 vs 44 biological replicates</li>
+<li class="fragment"><span class="math inline">\(\Delta snf2\)</span> mutant
+<ul>
+<li class="fragment">Catalytic component of the SWI/SNF complex</li>
+<li class="fragment">Chromatin-remodeling</li>
+<li class="fragment">+ and - regulation of a large number of genes</li>
+</ul></li>
+</ul>
+</section>
+<section id="lfc-in-highly-replicated-yeast" class="slide level2">
+<h2>LFC in highly replicated yeast</h2>
+<p><img src="index_files/figure-revealjs/yeast-ma-1.png" width="768" /></p>
+</section>
+<section id="lfc-with-2x-se-1700-black-5100-red" class="slide level2">
+<h2>LFC with 2x SE (1700 black, 5100 red)</h2>
+<p><img src="index_files/figure-revealjs/yeast-ma2-1.png" width="630" height="450" /></p>
+<p>* Actually, <span class="math inline">\(y=0\)</span> not trivial to determine here</p>
+</section>
+<section id="how-the-normal-prior-is-implemented" class="slide level2">
+<h2>How the Normal prior is implemented</h2>
+<ul>
+<li class="fragment">Consider all of MLE coefficients, <span class="math inline">\(\hat{\beta}_g\)</span></li>
+<li class="fragment">Want to adapt prior to the spread of these</li>
+<li class="fragment">Inverse weight by variance of log counts, <span class="math inline">\(1/\bar{\mu}_g + \alpha_{tr}(\bar{\mu}_g)\)</span></li>
+<li class="fragment">Normal has thin tails</li>
+<li class="fragment">Pick a Normal to match the upper 5% <em>weighted</em> quantile</li>
+</ul>
+<p><span class="citation" data-cites="Love2014">(Love et al., 2014)</span></p>
+</section>
+<section id="alternative-adaptive-priors-with-fat-tails" class="slide level2">
+<h2>Alternative adaptive priors with fat tails</h2>
+<p><img width=300 src="andean_cat.jpg"></p>
+<ul>
+<li class="fragment">ashr <span class="citation" data-cites="Stephens2016">(Stephens, 2016)</span>
+<ul>
+<li class="fragment"><span class="math inline">\(\pi_0 \delta_0 + \sum_{k=1}^K \pi_k N(\cdot; 0, \sigma_k^2)\)</span></li>
+<li class="fragment"><span class="math inline">\(\sigma_1, \dots, \sigma_k\)</span> a large, dense, fixed grid</li>
+</ul></li>
+<li class="fragment">apeglm <span class="citation" data-cites="Zhu2018">(Zhu, Ibrahim, &amp; Love, 2018)</span>
+<ul>
+<li class="fragment">Cauchy prior with scale parameter <span class="math inline">\(S\)</span></li>
+</ul></li>
+</ul>
+</section>
+<section id="previous-work-on-lfc-shrinkage-in-rna-seq" class="slide level2">
+<h2>Previous work on LFC shrinkage in RNA-seq</h2>
+<ul>
+<li>ShrinkBayes <span class="citation" data-cites="vandewiel2012 vandewiel2014">(Mark A. van de Wiel et al., 2012; Mark A van de Wiel, Neerincx, Buffart, Sie, &amp; Verheul, 2014)</span>
+<ul>
+<li>shrinkage of many parameters simultaneously</li>
+<li>non-equal mixture proportions for + and - effects</li>
+<li>spike + parametric, spike + non-parametric</li>
+<li>Integrated Nested Laplace Approximation <code>INLA</code></li>
+</ul></li>
+</ul>
+</section>
+<section id="method-details" class="slide level2">
+<h2>Method details</h2>
+<ul>
+<li class="fragment">ashr:
+<ul>
+<li class="fragment">set <span class="math inline">\(\sigma_k\)</span> grid based on min <span class="math inline">\(\hat{s}_g\)</span> and max <span class="math inline">\(\hat{\beta}_g^2 - \hat{s}_g^2\)</span></li>
+<li class="fragment">estimate <span class="math inline">\(\pi_k\)</span> using <span class="math inline">\(\hat{\beta}_g\)</span> and <span class="math inline">\(\hat{s}_g\)</span></li>
+<li class="fragment"><span class="math inline">\(P(\hat{\beta}_g | \beta_g, \hat{s}_g) = N(\hat{\beta}_g; \beta_g, \hat{s}_g^2)\)</span></li>
+<li class="fragment">return the posterior mean, SD, FSR</li>
+</ul></li>
+<li class="fragment">apeglm:
+<ul>
+<li class="fragment">set the scale <span class="math inline">\(S\)</span> of Cauchy using <span class="math inline">\(\hat{\beta}_g\)</span> and <span class="math inline">\(\hat{s}_g\)</span></li>
+<li class="fragment">shrink only one coefficient at a time</li>
+<li class="fragment">use data <span class="math inline">\(Y_g\)</span>, parameters <span class="math inline">\(\theta_g\)</span>, likelihood (NB, ZINB, etc.)</li>
+<li class="fragment">return the posterior mode, SD, profile posterior intervals</li>
+</ul></li>
+</ul>
+</section>
+<section id="connection-to-bayesglm" class="slide level2">
+<h2>Connection to <code>bayesglm</code></h2>
+<ul>
+<li class="fragment">Uses a 2.5 scale Cauchy prior on non-constant coefficients</li>
+<li class="fragment">Posterior mode and SE via an approximate EM within IRLS</li>
+<li class="fragment">“<em>want something better than the unstable estimates produced by the current default - maximum likelihood</em>”</li>
+<li class="fragment">“<em>[Cauchy] allows for occasional large coefficients while still performing a reasonable amount of shrinkage for coefficients near zero</em>”</li>
+</ul>
+<p><span class="citation" data-cites="Gelman2008">(Gelman, Jakulin, Pittau, &amp; Su, 2008)</span></p>
+</section>
+<section id="connection-to-bayesglm-1" class="slide level2">
+<h2>Connection to <code>bayesglm</code></h2>
+<p>Cauchy can be modeled as a mixture of Normals:</p>
+<p><span class="math display">\[ \beta \sim N(\mu, \sigma^2) \]</span></p>
+<p><span class="math display">\[ \sigma^2 \sim \textrm{Scale-inv-} \chi^2(\nu, S^2) \]</span></p>
+<ul>
+<li>Within IRLS, perform an EM step</li>
+<li>Treat <span class="math inline">\(\beta\)</span> as missing data, estimate <span class="math inline">\(\sigma\)</span></li>
+</ul>
+<p><span class="citation" data-cites="Gelman2008">(Gelman et al., 2008)</span></p>
+</section>
+<section id="apeglm-implementation" class="slide level2">
+<h2><code>apeglm</code> implementation</h2>
+<p><strong>A</strong>pproximate <strong>P</strong>osterior <strong>E</strong>stimation for <strong>GLM</strong></p>
+<ul>
+<li>Prior fit to <span class="math inline">\(\hat{\beta}_g\)</span> and <span class="math inline">\(\hat{s}_g\)</span>, details on next slide</li>
+<li>Treat dispersion parameter as fixed</li>
+<li>C++ version of L-BFGS-B to obtain posterior mode [1]</li>
+<li><code>optim</code> to obtain Hessian for Laplace approximation [2]</li>
+<li>[1] takes &lt; 1 s, [2] takes ~3 s, over e.g. 10k genes</li>
+</ul>
+</section>
+<section class="slide level2">
+
+<p>Solve for <span class="math inline">\(A\)</span> in the following <span class="citation" data-cites="EfronMorris">(Efron &amp; Morris, 1975)</span></p>
+<p><span class="math inline">\(A = \sum_{g=1}^G (\hat{\beta}_g^2 - e_g^2) I_g(A) \, / \, \sum_{g=1}^G I_g(A)\)</span></p>
+<p><span class="math inline">\(I_g(a) \equiv 1/[2(a + e_g^2)^2]\)</span></p>
+<p>Motivated by the following hierarchical model:</p>
+<p><span class="math display">\[ \hat{\beta}_g \sim N(\beta_g, e_g^2) \]</span></p>
+<p><span class="math display">\[ \beta_g \sim N(0, A) \]</span></p>
+<ol type="1">
+<li class="fragment">We plug in <span class="math inline">\(\hat{s}_g^2\)</span> for <span class="math inline">\(e_g^2\)</span></li>
+<li class="fragment">We use <span class="math inline">\(S = \sqrt{A}\)</span> to scale a <em>Cauchy</em> not a <em>Normal</em> prior</li>
+</ol>
+</section>
+<section id="prior-scale-false-sign-rate-fsr" class="slide level2">
+<h2>Prior scale &amp; False Sign Rate (FSR)</h2>
+<p><img src="adaptive_fsr.png"></p>
+</section>
+<section id="prior-scale-estimation-error" class="slide level2">
+<h2>Prior scale &amp; estimation error</h2>
+<p><img src="adaptive_eif.png"></p>
+</section>
+<section id="prior-scale-estimation-error-example" class="slide level2">
+<h2>Prior scale &amp; estimation error (example)</h2>
+<p><img src="adaptive_eif_problem.png"></p>
+</section>
+<section id="return-to-yeast-example-3-vs-3-replicates" class="slide level2">
+<h2>Return to yeast example: 3 vs 3 replicates</h2>
+</section>
+<section id="yeast-with-normal-prior" class="slide level2">
+<h2>Yeast with Normal prior</h2>
+<p><img src="index_files/figure-revealjs/yeast-normal-1.png" width="768" /></p>
+</section>
+<section id="yeast-with-apeglm" class="slide level2">
+<h2>Yeast with apeglm</h2>
+<p><img src="index_files/figure-revealjs/yeast-ape-1.png" width="768" /></p>
+</section>
+<section id="yeast-with-ashr" class="slide level2">
+<h2>Yeast with ashr</h2>
+<p><img src="index_files/figure-revealjs/yeast-ashr-1.png" width="768" /></p>
+</section>
+<section id="yeast-results-3-and-5-replicates-per-group" class="slide level2">
+<h2>Yeast results: 3 and 5 replicates per group</h2>
+<p><img width=750 src="yeast.png"></p>
+</section>
+<section id="simulation-5-and-10-replicates-per-group" class="slide level2">
+<h2>Simulation: 5 and 10 replicates per group</h2>
+<p><img width=750 src="sim_b.png"></p>
+</section>
+<section id="simulation-30-and-50-replicates-per-group" class="slide level2">
+<h2>Simulation: 30 and 50 replicates per group</h2>
+<p><img width=750 src="sim_largesize_b.png"></p>
+</section>
+<section id="problem-case-for-apeglm" class="slide level2">
+<h2>Problem case for apeglm</h2>
+</section>
+<section class="slide level2">
+
+<p><img src="index_files/figure-revealjs/apeglm-limit-1.png" width="672" /></p>
+<p><img src="index_files/figure-revealjs/apeglm-limit2-1.png" width="672" /></p>
+</section>
+<section class="slide level2">
+
+<p><strong>Paper and software</strong></p>
+<ul>
+<li><a href="https://doi.org/10.1101/303255">apeglm preprint</a> on bioRxiv</li>
+<li>with ZINB single cell simulation, bimodal LFC dist’n</li>
+<li><code>lfcShrink(dds, coef=2, type=&quot;apeglm&quot;)</code></li>
+<li><code>lfcShrink(dds, coef=2, type=&quot;ashr&quot;)</code></li>
+</ul>
+<p><strong>Acknowledgments</strong></p>
+<ul>
+<li>Work by <strong>Anqi Zhu</strong> and Joseph Ibrahim</li>
+<li>Comments from Wolfgang Huber and Cecile Le Sueur</li>
+<li>Funding:
+<ul>
+<li>MIL - R01 HG009125, P01 CA142538, P30 ES010126</li>
+<li>JGI and AZ - R01 GM070335 and P01 CA142538</li>
+</ul></li>
+</ul>
+<!--
+## Connection to Bayesian methods
+
+* baySeq
+* ShrinkBayes
+
+## Connection to dispersion prior
+
+* DSS
+* DESeq2
+
+## Student's t as dispersion prior
+
+* new paper
+-->
+</section>
+<section class="slide level2">
+
+<p><font size="-2"></p>
+<div id="refs" class="references">
+<div id="ref-Anders2010">
+<p>Anders, S., &amp; Huber, W. (2010). Differential expression analysis for sequence count data. <em>Genome Biology</em>, <em>11</em>, R106. <a href="https://doi.org/10.1186/gb-2010-11-10-r106" class="uri">https://doi.org/10.1186/gb-2010-11-10-r106</a></p>
+</div>
+<div id="ref-EfronMorris">
+<p>Efron, B., &amp; Morris, C. (1975). Data Analysis Using Stein’s Estimator and Its Generalization. <em>Journal of the American Statistical Association</em>, <em>70</em>(350), 311–319.</p>
+</div>
+<div id="ref-Gelman2008">
+<p>Gelman, A., Jakulin, A., Pittau, M. G., &amp; Su, Y.-S. (2008). A weakly informative default prior distribution for logistic and other regression models. <em>The Annals of Applied Statistics</em>, 1360–1383. <a href="http://www.stat.columbia.edu/~gelman/research/published/priors11.pdf" class="uri">http://www.stat.columbia.edu/~gelman/research/published/priors11.pdf</a></p>
+</div>
+<div id="ref-Love2014">
+<p>Love, M. I., Huber, W., &amp; Anders, S. (2014). Moderated estimation of fold change and dispersion for RNA-seq data with DESeq2. <em>Genome Biology</em>, <em>15</em>(12), 550. <a href="https://doi.org/10.1186/s13059-014-0550-8" class="uri">https://doi.org/10.1186/s13059-014-0550-8</a></p>
+</div>
+<div id="ref-McCarthy2012">
+<p>McCarthy, D. J., Chen, Y., &amp; Smyth, G. K. (2012). Differential expression analysis of multifactor RNA-Seq experiments with respect to biological variation. <em>Nucleic Acids Research</em>, <em>40</em>, 4288–4297. <a href="https://doi.org/10.1093/nar/gks042" class="uri">https://doi.org/10.1093/nar/gks042</a></p>
+</div>
+<div id="ref-Patro2017">
+<p>Patro, R., Duggal, G., Love, M. I., Irizarry, R. A., &amp; Kingsford, C. (2017). Salmon provides fast and bias-aware quantification of transcript expression. <em>Nature Methods</em>. <a href="http://dx.doi.org/10.1038/nmeth.4197" class="uri">http://dx.doi.org/10.1038/nmeth.4197</a></p>
+</div>
+<div id="ref-Robinson2010">
+<p>Robinson, M. D., &amp; Oshlack, A. (2010). A scaling normalization method for differential expression analysis of RNA-seq data. <em>Genome Biology</em>, <em>11</em>(r25). <a href="https://doi.org/10.1186/gb-2010-11-3-r25" class="uri">https://doi.org/10.1186/gb-2010-11-3-r25</a></p>
+</div>
+<div id="ref-Schurch2016">
+<p>Schurch, N. J., Schofield, P., Gierliński, M., Cole, C., Sherstnev, A., Singh, V., … Barton, G. J. (2016). How many biological replicates are needed in an RNA-seq experiment and which differential expression tool should you use? <em>RNA</em>, <em>22</em>(6), 839–851. <a href="https://doi.org/10.1261/rna.053959.115" class="uri">https://doi.org/10.1261/rna.053959.115</a></p>
+</div>
+<div id="ref-Soneson2015">
+<p>Soneson, C., Love, M. I., &amp; Robinson, M. (2015). Differential analyses for RNA-seq: transcript-level estimates improve gene-level inferences. <em>F1000Research</em>, <em>4</em>(1521). <a href="https://doi.org/10.12688/f1000research.7563.1" class="uri">https://doi.org/10.12688/f1000research.7563.1</a></p>
+</div>
+<div id="ref-Stephens2016">
+<p>Stephens, M. (2016). False discovery rates: A new deal. <em>Biostatistics</em>, <em>18</em>(2). <a href="https://doi.org/10.1093/biostatistics/kxw041" class="uri">https://doi.org/10.1093/biostatistics/kxw041</a></p>
+</div>
+<div id="ref-Trapnell2013">
+<p>Trapnell, C., Hendrickson, D. G., Sauvageau, M., Goff, L., Rinn, J. L., &amp; Pachter, L. (2013). Differential analysis of gene regulation at transcript resolution with RNA-seq. <em>Nature Biotechnology</em>. <a href="http://dx.doi.org/10.1038/nbt.2450" class="uri">http://dx.doi.org/10.1038/nbt.2450</a></p>
+</div>
+<div id="ref-Berge2018">
+<p>Van den Berge, K., Perraudeau, F., Soneson, C., Love, M. I., Risso, D., Vert, J.-P., … Clement, L. (2018). Observation weights unlock bulk RNA-seq tools for zero inflation and single-cell applications. <em>Genome Biology</em>, <em>19</em>(24). <a href="https://doi.org/10.1186/s13059-018-1406-4" class="uri">https://doi.org/10.1186/s13059-018-1406-4</a></p>
+</div>
+<div id="ref-vandewiel2012">
+<p>Wiel, M. A. van de, Leday, G. G., Pardo, L., Rue, H., Vaart, A. W. van der, &amp; Wieringen, W. N. van. (2012). Bayesian analysis of RNA sequencing data by estimating multiple shrinkage priors. <em>Biostatistics</em>, <em>14</em>(1), 113–128. <a href="https://doi.org/10.1093/biostatistics/kxs031" class="uri">https://doi.org/10.1093/biostatistics/kxs031</a></p>
+</div>
+<div id="ref-vandewiel2014">
+<p>Wiel, M. A. van de, Neerincx, M., Buffart, T. E., Sie, D., &amp; Verheul, H. M. (2014). ShrinkBayes: a versatile R-package for analysis of count-based sequencing data in complex study designs. <em>BMC Bioinformatics</em>, <em>15</em>(116). <a href="https://doi.org/10.1186/1471-2105-15-116" class="uri">https://doi.org/10.1186/1471-2105-15-116</a></p>
+</div>
+<div id="ref-Wu2012">
+<p>Wu, H., Wang, C., &amp; Wu, Z. (2012). A new shrinkage estimator for dispersion improves differential expression detection in RNA-seq data. <em>Biostatistics</em>, <em>14</em>(2). <a href="https://doi.org/10.1093/biostatistics/kxs033" class="uri">https://doi.org/10.1093/biostatistics/kxs033</a></p>
+</div>
+<div id="ref-Zhu2018">
+<p>Zhu, A., Ibrahim, J. G., &amp; Love, M. I. (2018). Heavy-tailed prior distributions for sequence count data: Removing the noise and preserving large differences. <em>bioRxiv</em>. <a href="https://doi.org/10.1101/303255" class="uri">https://doi.org/10.1101/303255</a></p>
+</div>
+</div>
+</section>
+    </div>
+  </div>
+
+  <script src="index_files/reveal.js-3.3.0.1/lib/js/head.min.js"></script>
+  <script src="index_files/reveal.js-3.3.0.1/js/reveal.js"></script>
+
+  <script>
+
+      // Full list of configuration options available at:
+      // https://github.com/hakimel/reveal.js#configuration
+      Reveal.initialize({
+        // Push each slide change to the browser history
+        history: true,
+        // Vertical centering of slides
+        center: true,
+        // Transition style
+        transition: 'none', // none/fade/slide/convex/concave/zoom
+        // Transition style for full page slide backgrounds
+        backgroundTransition: 'default', // none/fade/slide/convex/concave/zoom
+
+
+
+        // Optional reveal.js plugins
+        dependencies: [
+        ]
+      });
+    </script>
+  <!-- dynamically load mathjax for compatibility with self-contained -->
+  <script>
+    (function () {
+      var script = document.createElement("script");
+      script.type = "text/javascript";
+      script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+      document.getElementsByTagName("head")[0].appendChild(script);
+    })();
+  </script>
+
+<script>
+  (function() {
+    if (window.jQuery) {
+      Reveal.addEventListener( 'slidechanged', function(event) {  
+        window.jQuery(event.previousSlide).trigger('hidden');
+        window.jQuery(event.currentSlide).trigger('shown');
+      });
+    }
+  })();
+</script>
+
+
+  </body>
+</html>
