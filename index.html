@@ -511,9 +511,8 @@ UNC-Chapel Hill</div></h2>
 <h2>Aims and activity of the <a href="https://mikelove.github.io">Love lab</a></h2>
 <p><img height=100 src="rlogo.png"> <img height=100 src="bioconductorlogo.jpg"></p>
 <ul>
-<li>Robust, extensible software for genomic data science</li>
+<li>Software and workflows for genomic data science</li>
 <li>Statistical method development</li>
-<li>Reproducible research and workflows</li>
 <li>Collaborations: Genetics, Biology, CS, Statistics</li>
 </ul>
 </section>
@@ -534,12 +533,12 @@ UNC-Chapel Hill</div></h2>
 <ul>
 <li>Many collaborations around gene expression:
 <ul>
-<li>adipose tissue (T2D)*</li>
-<li>progenitor neurons (autism, schizophrenia)*</li>
-<li>colon (IBD)*</li>
-<li>macrophage (arthritis)*</li>
+<li>neurons (autism, schizophrenia) *</li>
+<li>adipose tissue (T2D) *</li>
+<li>macrophage (arthritis) *</li>
+<li>colon (IBD) *</li>
 <li>breast tumor</li>
-<li>upper airway and lung (HIV)</li>
+<li>airway (HIV)</li>
 </ul></li>
 <li>Often, a <em>counting</em> technology
 <ul>
@@ -547,7 +546,7 @@ UNC-Chapel Hill</div></h2>
 <li>Nanostring</li>
 </ul></li>
 </ul>
-<p>* also interested in chromatin accessibility or structure</p>
+<p>* also interested in chromatin accessibility or conformation</p>
 </section>
 <section id="often-interested-in-log-fold-change" class="slide level2">
 <h2>Often, interested in log fold change</h2>
@@ -560,13 +559,11 @@ UNC-Chapel Hill</div></h2>
 <section id="complexities" class="slide level2">
 <h2>Complexities</h2>
 <ul>
-<li class="fragment">Counts <span class="math inline">\(X_{gi}\)</span> and <span class="math inline">\(Y_{gi}\)</span> are actually estimated [1-3]</li>
-<li class="fragment">Technical artifacts: per-sample scaling factor / offset [4-5]</li>
-<li class="fragment">Negative Binomial widely used
-<ul>
-<li class="fragment">dispersion parameter must be estimated [6-8]</li>
-<li class="fragment">zero component for highly amplified data [9]</li>
-</ul></li>
+<li>Counts <span class="math inline">\(X_{gi}\)</span> and <span class="math inline">\(Y_{gi}\)</span> are actually estimated [1-3]</li>
+<li>Technical artifacts: per-sample scaling factor / offset [4-5]</li>
+<li>Batches and PCR amplification effects</li>
+<li>Dispersion parameter must be estimated [6-8]</li>
+<li>Zero component for highly amplified data [9]</li>
 </ul>
 <p><small> <strong>References</strong> <br/> [1] Issue of DGE <span class="citation" data-cites="Trapnell2013">(Trapnell et al., 2013)</span> <br/> [2] Bias models <span class="citation" data-cites="Patro2017">(Patro, Duggal, Love, Irizarry, &amp; Kingsford, 2017)</span>, <br/> [3] Isoform offset <span class="citation" data-cites="Soneson2015">(Soneson, Love, &amp; Robinson, 2015)</span>, <br/> [4] TMM <span class="citation" data-cites="Robinson2010">(M. D. Robinson &amp; Oshlack, 2010)</span>, <br/> [5] Median ratio <span class="citation" data-cites="Anders2010">(Anders &amp; Huber, 2010)</span>, <br/> [6] edgeR GLM <span class="citation" data-cites="McCarthy2012">(McCarthy, Chen, &amp; Smyth, 2012)</span>, <br/> [7] DSS <span class="citation" data-cites="Wu2012">(H. Wu, Wang, &amp; Wu, 2012)</span>, <br/> [8] DESeq2 <span class="citation" data-cites="Love2014">(Love, Huber, &amp; Anders, 2014)</span>, <br/> [9] ZI weights <span class="citation" data-cites="Berge2018">(Van den Berge et al., 2018)</span> </small></p>
 </section>
@@ -625,34 +622,16 @@ UNC-Chapel Hill</div></h2>
 </div>
 </div>
 </section>
-<section id="simplify-statistical-routines" class="slide level2">
-<h2>Simplify statistical routines</h2>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># import the counts</span>
-se &lt;-<span class="st"> </span><span class="kw">tximeta</span>(samples)
-gse &lt;-<span class="st"> </span><span class="kw">summarizeToGene</span>(se)
-
-<span class="co"># make a dataset</span>
-dds &lt;-<span class="st"> </span><span class="kw">DESeqDataSet</span>(gse, <span class="op">~</span>batch <span class="op">+</span><span class="st"> </span>condition)
-
-<span class="co"># variance stabilization for PCA, etc.</span>
-vsd &lt;-<span class="st"> </span><span class="kw">vst</span>(dds)
-
-<span class="co"># scaling factors, dispersion, MLE LFC</span>
-dds &lt;-<span class="st"> </span><span class="kw">DESeq</span>(dds)
-
-<span class="co"># shrinkage estimation</span>
-res &lt;-<span class="st"> </span><span class="kw">lfcShrink</span>(dds, <span class="dt">coef=</span><span class="dv">3</span>)</code></pre></div>
-</section>
 <section id="look-at-real-lfc-distribution" class="slide level2">
 <h2>Look at real LFC distribution</h2>
 <ul>
-<li class="fragment">Highly replicated yeast dataset <span class="citation" data-cites="Schurch2016">(Schurch et al., 2016)</span></li>
-<li class="fragment">42 vs 44 biological replicates</li>
-<li class="fragment"><span class="math inline">\(\Delta snf2\)</span> mutant
+<li>Highly replicated yeast dataset <span class="citation" data-cites="Schurch2016">(Schurch et al., 2016)</span></li>
+<li>42 vs 44 biological replicates</li>
+<li><span class="math inline">\(\Delta snf2\)</span> mutant
 <ul>
-<li class="fragment">Catalytic component of the SWI/SNF complex</li>
-<li class="fragment">Chromatin-remodeling</li>
-<li class="fragment">+ and - regulation of a large number of genes</li>
+<li>Catalytic component of the SWI/SNF complex</li>
+<li>Chromatin-remodeling</li>
+<li>Regulation of a large number of genes</li>
 </ul></li>
 </ul>
 </section>
@@ -668,11 +647,11 @@ res &lt;-<span class="st"> </span><span class="kw">lfcShrink</span>(dds, <span c
 <section id="how-the-normal-prior-is-implemented" class="slide level2">
 <h2>How the Normal prior is implemented</h2>
 <ul>
-<li class="fragment">Consider all of MLE coefficients, <span class="math inline">\(\hat{\beta}_g\)</span></li>
-<li class="fragment">Want to adapt prior to the spread of these</li>
-<li class="fragment">Inverse weight by variance of log counts, <span class="math inline">\(1/\bar{\mu}_g + \alpha_{tr}(\bar{\mu}_g)\)</span></li>
-<li class="fragment">Normal has thin tails</li>
-<li class="fragment">Pick a Normal to match the upper 5% <em>weighted</em> quantile</li>
+<li>Consider all of MLE coefficients, <span class="math inline">\(\hat{\beta}_g\)</span></li>
+<li>Adapt prior to the spread of these</li>
+<li>Inverse weight by expected variance of log counts</li>
+<li>Normal has thin tails</li>
+<li>Pick a Normal to match the upper 5% <em>weighted</em> quantile</li>
 </ul>
 <p><span class="citation" data-cites="Love2014">(Love et al., 2014)</span></p>
 </section>
@@ -680,26 +659,14 @@ res &lt;-<span class="st"> </span><span class="kw">lfcShrink</span>(dds, <span c
 <h2>Alternative adaptive priors with heavy tails</h2>
 <p><img width=300 src="andean_cat.jpg"></p>
 <ul>
-<li class="fragment">ashr <span class="citation" data-cites="Stephens2016">(Stephens, 2016)</span>
+<li>ashr <span class="citation" data-cites="Stephens2016">(Stephens, 2016)</span>
 <ul>
-<li class="fragment"><span class="math inline">\(\pi_0 \delta_0 + \sum_{k=1}^K \pi_k N(\cdot; 0, \sigma_k^2)\)</span></li>
-<li class="fragment"><span class="math inline">\(\sigma_1, \dots, \sigma_k\)</span> a large, dense, fixed grid</li>
+<li><span class="math inline">\(\pi_0 \delta_0 + \sum_{k=1}^K \pi_k N(\cdot; 0, \sigma_k^2)\)</span></li>
+<li><span class="math inline">\(\sigma_1, \dots, \sigma_k\)</span> a large, dense, fixed grid</li>
 </ul></li>
-<li class="fragment">apeglm <span class="citation" data-cites="Zhu2018">(Zhu, Ibrahim, &amp; Love, 2018)</span>
+<li>apeglm <span class="citation" data-cites="Zhu2018">(Zhu, Ibrahim, &amp; Love, 2018)</span>
 <ul>
-<li class="fragment">Cauchy prior with scale parameter <span class="math inline">\(S\)</span></li>
-</ul></li>
-</ul>
-</section>
-<section id="previous-work-on-lfc-shrinkage-in-rna-seq" class="slide level2">
-<h2>Previous work on LFC shrinkage in RNA-seq</h2>
-<ul>
-<li>ShrinkBayes <span class="citation" data-cites="vandewiel2012 vandewiel2014">(Mark A. van de Wiel et al., 2012; Mark A van de Wiel, Neerincx, Buffart, Sie, &amp; Verheul, 2014)</span>
-<ul>
-<li>shrinkage of many parameters simultaneously</li>
-<li>non-equal mixture proportions for + and - effects</li>
-<li>spike + parametric, spike + non-parametric</li>
-<li>Integrated Nested Laplace Approximation <code>INLA</code></li>
+<li>Cauchy prior with scale parameter <span class="math inline">\(S\)</span></li>
 </ul></li>
 </ul>
 </section>
@@ -725,19 +692,26 @@ res &lt;-<span class="st"> </span><span class="kw">lfcShrink</span>(dds, <span c
 <section id="connection-to-bayesglm" class="slide level2">
 <h2>Connection to <code>bayesglm</code></h2>
 <ul>
-<li class="fragment">Uses a 2.5 scale Cauchy prior on non-constant coefficients</li>
-<li class="fragment">Posterior mode and SE via an approximate EM within IRLS</li>
-<li class="fragment">“<em>want something better than the unstable estimates produced by the current default - maximum likelihood</em>”</li>
-<li class="fragment">“<em>[Cauchy] allows for occasional large coefficients while still performing a reasonable amount of shrinkage for coefficients near zero</em>”</li>
+<li>Uses a 2.5 scale Cauchy prior on non-constant coefficients</li>
+<li>Posterior mode and SE via an approximate EM within IRLS</li>
 </ul>
 <p><span class="citation" data-cites="Gelman2008">(Gelman, Jakulin, Pittau, &amp; Su, 2008)</span></p>
 </section>
 <section id="connection-to-bayesglm-1" class="slide level2">
 <h2>Connection to <code>bayesglm</code></h2>
+<ul>
+<li>“<em>want something better than the unstable estimates produced by the current default - maximum likelihood</em>”</li>
+<li>“<em>[Cauchy] allows for occasional large coefficients while still performing a reasonable amount of shrinkage for coefficients near zero</em>”</li>
+</ul>
+<p><span class="citation" data-cites="Gelman2008">(Gelman et al., 2008)</span></p>
+</section>
+<section id="connection-to-bayesglm-2" class="slide level2">
+<h2>Connection to <code>bayesglm</code></h2>
 <p>Cauchy can be modeled as a mixture of Normals:</p>
-<p><span class="math display">\[ \beta \sim N(\mu, \sigma^2) \]</span></p>
+<p><span class="math display">\[ \beta \sim N(0, \sigma^2) \]</span></p>
 <p><span class="math display">\[ \sigma^2 \sim \textrm{Scale-inv-} \chi^2(\nu, S^2) \]</span></p>
 <ul>
+<li><span class="math inline">\(\nu=1\)</span> and <span class="math inline">\(S=2.5\)</span> are fixed</li>
 <li>Within IRLS, perform an EM step</li>
 <li>Treat <span class="math inline">\(\beta\)</span> as missing data, estimate <span class="math inline">\(\sigma\)</span></li>
 </ul>
@@ -767,6 +741,18 @@ res &lt;-<span class="st"> </span><span class="kw">lfcShrink</span>(dds, <span c
 <li class="fragment">We use <span class="math inline">\(S = \sqrt{A}\)</span> to scale a <em>Cauchy</em> not a <em>Normal</em> prior</li>
 </ol>
 </section>
+<section id="false-sign-rate-fsr" class="slide level2">
+<h2>False Sign Rate (FSR)</h2>
+<ul>
+<li>p-value*</li>
+<li>adjusted p-value</li>
+<li>q-value</li>
+<li>local false discovery rate</li>
+<li>local false sign rate*</li>
+<li>s-value</li>
+</ul>
+<p><img src="index_files/figure-revealjs/pvalue-1.png" width="672" /></p>
+</section>
 <section id="prior-scale-false-sign-rate-fsr" class="slide level2">
 <h2>Prior scale &amp; False Sign Rate (FSR)</h2>
 <p><img src="adaptive_fsr.png"></p>
@@ -794,6 +780,9 @@ res &lt;-<span class="st"> </span><span class="kw">lfcShrink</span>(dds, <span c
 <h2>Yeast with ashr</h2>
 <p><img src="index_files/figure-revealjs/yeast-ashr-1.png" width="768" /></p>
 </section>
+<section id="error-and-concordance-for-various-methods" class="slide level2">
+<h2>Error and concordance for various methods</h2>
+</section>
 <section id="yeast-results-3-and-5-replicates-per-group" class="slide level2">
 <h2>Yeast results: 3 and 5 replicates per group</h2>
 <p><img width=750 src="yeast.png"></p>
@@ -814,6 +803,34 @@ res &lt;-<span class="st"> </span><span class="kw">lfcShrink</span>(dds, <span c
 <p><img src="index_files/figure-revealjs/apeglm-limit-1.png" width="672" /></p>
 <p><img src="index_files/figure-revealjs/apeglm-limit2-1.png" width="672" /></p>
 </section>
+<section id="what-else-have-we-been-working-on" class="slide level2">
+<h2>What else have we been working on</h2>
+<ul>
+<li><a href="https://bioconductor.org/packages/tximeta">tximeta</a> - automatic detection of gene provenance (<a href="https://bit.ly/tximeta">slides</a>)</li>
+<li><a href="https://bioconductor.org/packages/rnaseqDTU">rnaseqDTU</a> - workflow for differential transcript usage</li>
+<li>Propagation of uncertainty at transcript-level</li>
+<li>Multi-omics unsupervised benchmark (McCabe)</li>
+<li>Germline analysis in Carolina Breast Cancer Study (Bhattacharya)</li>
+</ul>
+</section>
+<section id="simplify-statistical-routines" class="slide level2">
+<h2>Simplify statistical routines</h2>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># import the data</span>
+se &lt;-<span class="st"> </span><span class="kw">tximeta</span>(samples)
+gse &lt;-<span class="st"> </span><span class="kw">summarizeToGene</span>(se)
+
+<span class="co"># build dataset</span>
+dds &lt;-<span class="st"> </span><span class="kw">DESeqDataSet</span>(gse, <span class="op">~</span>batch <span class="op">+</span><span class="st"> </span>condition)
+
+<span class="co"># variance stabilization</span>
+vsd &lt;-<span class="st"> </span><span class="kw">vst</span>(dds)
+
+<span class="co"># size factors, dispersion estimation</span>
+dds &lt;-<span class="st"> </span><span class="kw">DESeq</span>(dds)
+
+<span class="co"># shrinkage estimation</span>
+res &lt;-<span class="st"> </span><span class="kw">lfcShrink</span>(dds, <span class="dt">coef=</span><span class="dv">3</span>)</code></pre></div>
+</section>
 <section class="slide level2">
 
 <p><strong>Paper and software</strong></p>
@@ -832,21 +849,28 @@ res &lt;-<span class="st"> </span><span class="kw">lfcShrink</span>(dds, <span c
 <li>JGI and AZ - R01 GM070335 and P01 CA142538</li>
 </ul></li>
 </ul>
-<!--
-## Connection to Bayesian methods
-
-* baySeq
-* ShrinkBayes
-
-## Connection to dispersion prior
-
-* DSS
-* DESeq2
-
-## Student's t as dispersion prior
-
-* new paper
--->
+</section>
+<section id="previous-work-on-lfc-shrinkage-in-rna-seq" class="slide level2">
+<h2>Previous work on LFC shrinkage in RNA-seq</h2>
+<ul>
+<li>ShrinkBayes <span class="citation" data-cites="vandewiel2012 vandewiel2014">(Mark A. van de Wiel et al., 2012; Mark A van de Wiel, Neerincx, Buffart, Sie, &amp; Verheul, 2014)</span>
+<ul>
+<li>shrinkage of many parameters simultaneously</li>
+<li>non-equal mixture proportions for + and - effects</li>
+<li>spike + parametric, spike + non-parametric</li>
+<li>Integrated Nested Laplace Approximation <code>INLA</code></li>
+</ul></li>
+</ul>
+</section>
+<section id="connection-to-dispersion-prior" class="slide level2">
+<h2>Connection to dispersion prior</h2>
+<ul>
+<li><a href="https://doi.org/10.1093/biostatistics/kxs033">DSS</a> - model log dispersion as Normal. <strong>Method of moments</strong> estimator and <strong>simulation</strong> to define hyper-parameters</li>
+<li><a href="https://doi.org/10.1186/s13059-014-0550-8">DESeq2</a> - model log dispersion as Normal. <strong>Cox-Reid</strong> estimator and <strong>closed form</strong> to define hyper-parameters</li>
+<li><a href="https://doi.org/10.1016/j.cels.2018.06.011">BASiCS</a> - model log dispersion with Student’s <em>t</em></li>
+</ul>
+<p><span class="math display">\[ \log(\delta_g) \sim f(\mu_g) + \varepsilon, \quad \varepsilon \sim t_\nu(0,\sigma^2) \]</span></p>
+<p>“<em>here we opt for a Student-t distribution as it leads to inference that is more robust to the presence of outlier genes</em>”</p>
 </section>
 <section class="slide level2">
 
