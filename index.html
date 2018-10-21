@@ -48,7 +48,7 @@ code > span.cv { color: #8f5902; font-weight: bold; font-style: italic; } /* Com
 code > span.in { color: #8f5902; font-weight: bold; font-style: italic; } /* Information */
 </style>
 
-<link rel="stylesheet" href="index_files/reveal.js-3.3.0.1/css/theme/simple.css" id="theme">
+<link rel="stylesheet" href="index_files/reveal.js-3.3.0.1/css/theme/white.css" id="theme">
 
 
   <!-- some tweaks to reveal css -->
@@ -486,10 +486,10 @@ document.getElementsByTagName('head')[0].appendChild(style);
 
 <section>
     <h1 class="title">Adaptive priors for estimating effect size with genomic data</h1>
-    <h2 class="author"><div style="white-space: pre-line;">Michael Love
+    <h2 class="author"><div style="white-space: pre-line;"><small>Michael Love
 Dept. of Biostatistics
 Dept. of Genetics
-UNC-Chapel Hill</div></h2>
+UNC-Chapel Hill</small></div></h2>
 </section>
 
 <section id="work-in-collaboration-with" class="slide level2">
@@ -516,16 +516,13 @@ UNC-Chapel Hill</div></h2>
 <li>Collaborations: Genetics, Biology, CS, Statistics</li>
 </ul>
 </section>
-<section id="our-starting-point" class="slide level2">
-<h2>Our starting point</h2>
+<section id="we-often-begin-with-plots" class="slide level2">
+<h2>We often begin with plots</h2>
+<p>Crucial for high dimensional analysis:</p>
 <ul>
-<li>In genomic data analysis, we often begin with plots</li>
-<li>Crucial for high dimensional analysis:
-<ul>
-<li>effect size over mean</li>
-<li>within-group variance over mean</li>
+<li>effect size over mean (“MA” plot)</li>
+<li>SD over mean</li>
 <li>systematic variation (boxplots, PCA)</li>
-</ul></li>
 </ul>
 </section>
 <section id="gene-expression" class="slide level2">
@@ -534,7 +531,7 @@ UNC-Chapel Hill</div></h2>
 <li>Many collaborations around gene expression:
 <ul>
 <li>neurons (autism, schizophrenia) *</li>
-<li>adipose tissue (T2D) *</li>
+<li>adipose (T2D) *</li>
 <li>macrophage (arthritis) *</li>
 <li>colon (IBD) *</li>
 <li>breast tumor</li>
@@ -548,8 +545,8 @@ UNC-Chapel Hill</div></h2>
 </ul>
 <p>* also interested in chromatin accessibility or conformation</p>
 </section>
-<section id="often-interested-in-log-fold-change" class="slide level2">
-<h2>Often, interested in log fold change</h2>
+<section id="log-fold-change" class="slide level2">
+<h2>Log fold change</h2>
 <p>Expression of <span class="math inline">\(G\)</span> genes, 5 replicates in 2 groups:</p>
 <p><span class="math display">\[[X_{g1}, \dots, X_{g5}] \quad \textrm{vs} \quad [Y_{g1}, \dots, Y_{g5}]\]</span></p>
 <p><span class="math display">\[ E(X_{gi}) = \mu_{gX} \]</span></p>
@@ -574,8 +571,8 @@ UNC-Chapel Hill</div></h2>
 <li>2500 “genes”, 5 vs 5 replicates</li>
 </ul>
 </section>
-<section id="effect-size-over-mean-ma-or-bland-altman" class="slide level2">
-<h2>Effect size over mean (“MA” or Bland-Altman)</h2>
+<section id="effect-size-over-mean-ma" class="slide level2">
+<h2>Effect size over mean (“MA”)</h2>
 <p><img src="index_files/figure-revealjs/ma-1.png" width="768" /></p>
 </section>
 <section id="estimate-over-truth" class="slide level2">
@@ -613,7 +610,7 @@ UNC-Chapel Hill</div></h2>
 <p><img width=400 src="index_files/figure-revealjs/scatter-normal-1.png"></p>
 </div>
 <div class="col">
-<p><br/></p>
+<p><br/> With prior:</p>
 <ul>
 <li>Reduced variance</li>
 <li>Genes can be ranked</li>
@@ -622,11 +619,18 @@ UNC-Chapel Hill</div></h2>
 </div>
 </div>
 </section>
-<section id="look-at-real-lfc-distribution" class="slide level2">
-<h2>Look at real LFC distribution</h2>
+<section id="effect-size-estimation" class="slide level2">
+<h2>Effect size estimation</h2>
+<ul>
+<li>Perhaps we can do better than pseudocount</li>
+<li>Why bother? Just use p-values</li>
+</ul>
+</section>
+<section id="a-distribution-of-effect-sizes" class="slide level2">
+<h2>A distribution of effect sizes</h2>
 <ul>
 <li>Highly replicated yeast dataset <span class="citation" data-cites="Schurch2016">(Schurch et al., 2016)</span></li>
-<li>42 vs 44 biological replicates</li>
+<li>42 vs 44 biological replicates!</li>
 <li><span class="math inline">\(\Delta snf2\)</span> mutant
 <ul>
 <li>Catalytic component of the SWI/SNF complex</li>
@@ -639,24 +643,39 @@ UNC-Chapel Hill</div></h2>
 <h2>LFC in highly replicated yeast</h2>
 <p><img src="index_files/figure-revealjs/yeast-ma-1.png" width="768" /></p>
 </section>
-<section id="lfc-with-2x-se-1700-black-5100-red" class="slide level2">
-<h2>LFC with 2x SE (1700 black, 5100 red)</h2>
+<section id="lfc-with-2x-se" class="slide level2">
+<h2>LFC with 2x SE</h2>
 <p><img src="index_files/figure-revealjs/yeast-ma2-1.png" width="630" height="450" /></p>
-<p>* Actually, <span class="math inline">\(y=0\)</span> not trivial to determine here</p>
+<p>(1700 black, 5100 red)</p>
 </section>
-<section id="how-the-normal-prior-is-implemented" class="slide level2">
-<h2>How the Normal prior is implemented</h2>
+<section id="consider-utility-of-p-values" class="slide level2">
+<h2>Consider utility of p-values</h2>
 <ul>
-<li>Consider all of MLE coefficients, <span class="math inline">\(\hat{\beta}_g\)</span></li>
-<li>Adapt prior to the spread of these</li>
+<li>Null likely false for (nearly) all genes in this example</li>
+<li>Ranking by prob under the null seems non-obvious</li>
+<li>We can estimate the effect size for small or large <em>n</em></li>
+</ul>
+</section>
+<section id="normal-prior-in-deseq2" class="slide level2">
+<h2>Normal prior in DESeq2</h2>
+<div class="container">
+<div class="col">
+<p><img width=400 src="index_files/figure-revealjs/scatter-normal-1.png"></p>
+</div>
+<div class="col">
+<ul>
+<li>MLE coefficients, <span class="math inline">\(\hat{\beta}_g\)</span></li>
+<li>Adapt prior to these</li>
+<li><font color="red">Normal has thin tails</font></li>
+<li>Match Normal to upper 5% <em>weighted</em> quantile</li>
 <li>Inverse weight by expected variance of log counts</li>
-<li>Normal has thin tails</li>
-<li>Pick a Normal to match the upper 5% <em>weighted</em> quantile</li>
 </ul>
 <p><span class="citation" data-cites="Love2014">(Love et al., 2014)</span></p>
+</div>
+</div>
 </section>
-<section id="alternative-adaptive-priors-with-heavy-tails" class="slide level2">
-<h2>Alternative adaptive priors with heavy tails</h2>
+<section id="other-priors-with-heavy-tails" class="slide level2">
+<h2>Other priors with heavy tails</h2>
 <p><img width=300 src="andean_cat.jpg"></p>
 <ul>
 <li>ashr <span class="citation" data-cites="Stephens2016">(Stephens, 2016)</span>
@@ -678,19 +697,18 @@ UNC-Chapel Hill</div></h2>
 <li class="fragment">set <span class="math inline">\(\sigma_k\)</span> grid based on min <span class="math inline">\(\hat{s}_g\)</span> and max <span class="math inline">\(\hat{\beta}_g^2 - \hat{s}_g^2\)</span></li>
 <li class="fragment">estimate <span class="math inline">\(\pi_k\)</span> using <span class="math inline">\(\hat{\beta}_g\)</span> and <span class="math inline">\(\hat{s}_g\)</span></li>
 <li class="fragment"><span class="math inline">\(P(\hat{\beta}_g | \beta_g, \hat{s}_g) = N(\hat{\beta}_g; \beta_g, \hat{s}_g^2)\)</span></li>
-<li class="fragment">return the posterior mean, SD, FSR</li>
+<li class="fragment">return the posterior mean, SD</li>
 </ul></li>
 <li class="fragment">apeglm:
 <ul>
 <li class="fragment">set the scale <span class="math inline">\(S\)</span> of Cauchy using <span class="math inline">\(\hat{\beta}_g\)</span> and <span class="math inline">\(\hat{s}_g\)</span></li>
-<li class="fragment">shrink only one coefficient at a time</li>
 <li class="fragment">use data <span class="math inline">\(Y_g\)</span>, parameters <span class="math inline">\(\theta_g\)</span>, likelihood (NB, ZINB, etc.)</li>
-<li class="fragment">return the posterior mode, SD, profile posterior intervals</li>
+<li class="fragment">return the posterior mode, SD</li>
 </ul></li>
 </ul>
 </section>
 <section id="connection-to-bayesglm" class="slide level2">
-<h2>Connection to <code>bayesglm</code></h2>
+<h2>Connection to bayesglm</h2>
 <ul>
 <li>Uses a 2.5 scale Cauchy prior on non-constant coefficients</li>
 <li>Posterior mode and SE via an approximate EM within IRLS</li>
@@ -698,7 +716,7 @@ UNC-Chapel Hill</div></h2>
 <p><span class="citation" data-cites="Gelman2008">(Gelman, Jakulin, Pittau, &amp; Su, 2008)</span></p>
 </section>
 <section id="connection-to-bayesglm-1" class="slide level2">
-<h2>Connection to <code>bayesglm</code></h2>
+<h2>Connection to bayesglm</h2>
 <ul>
 <li>“<em>want something better than the unstable estimates produced by the current default - maximum likelihood</em>”</li>
 <li>“<em>[Cauchy] allows for occasional large coefficients while still performing a reasonable amount of shrinkage for coefficients near zero</em>”</li>
@@ -706,7 +724,7 @@ UNC-Chapel Hill</div></h2>
 <p><span class="citation" data-cites="Gelman2008">(Gelman et al., 2008)</span></p>
 </section>
 <section id="connection-to-bayesglm-2" class="slide level2">
-<h2>Connection to <code>bayesglm</code></h2>
+<h2>Connection to bayesglm</h2>
 <p>Cauchy can be modeled as a mixture of Normals:</p>
 <p><span class="math display">\[ \beta \sim N(0, \sigma^2) \]</span></p>
 <p><span class="math display">\[ \sigma^2 \sim \textrm{Scale-inv-} \chi^2(\nu, S^2) \]</span></p>
@@ -718,7 +736,7 @@ UNC-Chapel Hill</div></h2>
 <p><span class="citation" data-cites="Gelman2008">(Gelman et al., 2008)</span></p>
 </section>
 <section id="apeglm-implementation" class="slide level2">
-<h2><code>apeglm</code> implementation</h2>
+<h2>apeglm implementation</h2>
 <p><strong>A</strong>pproximate <strong>P</strong>osterior <strong>E</strong>stimation for <strong>GLM</strong></p>
 <ul>
 <li>Prior fit to <span class="math inline">\(\hat{\beta}_g\)</span> and <span class="math inline">\(\hat{s}_g\)</span>, details on next slide</li>
@@ -730,15 +748,15 @@ UNC-Chapel Hill</div></h2>
 </section>
 <section class="slide level2">
 
-<p>Solve for <span class="math inline">\(A\)</span> in the following <span class="citation" data-cites="EfronMorris">(Efron &amp; Morris, 1975)</span></p>
-<p><span class="math inline">\(A = \sum_{g=1}^G (\hat{\beta}_g^2 - e_g^2) I_g(A) \, / \, \sum_{g=1}^G I_g(A)\)</span></p>
-<p><span class="math inline">\(I_g(a) \equiv 1/[2(a + e_g^2)^2]\)</span></p>
+<p>Solve for <span class="math inline">\(A\)</span> in equation of the form <span class="citation" data-cites="EfronMorris">(Efron &amp; Morris, 1975)</span></p>
+<p><span class="math inline">\(A = f(A, \hat{\beta}_g^2, e_g^2)\)</span></p>
 <p>Motivated by the following hierarchical model:</p>
 <p><span class="math display">\[ \hat{\beta}_g \sim N(\beta_g, e_g^2) \]</span></p>
 <p><span class="math display">\[ \beta_g \sim N(0, A) \]</span></p>
+<p>Two approximations to note:</p>
 <ol type="1">
 <li class="fragment">We plug in <span class="math inline">\(\hat{s}_g^2\)</span> for <span class="math inline">\(e_g^2\)</span></li>
-<li class="fragment">We use <span class="math inline">\(S = \sqrt{A}\)</span> to scale a <em>Cauchy</em> not a <em>Normal</em> prior</li>
+<li class="fragment">Estimate scale of a <em>Normal</em> then use a <em>Cauchy</em></li>
 </ol>
 </section>
 <section id="false-sign-rate-fsr" class="slide level2">
@@ -761,12 +779,13 @@ UNC-Chapel Hill</div></h2>
 <h2>Prior scale &amp; estimation error</h2>
 <p><img src="adaptive_eif.png"></p>
 </section>
-<section id="prior-scale-estimation-error-example" class="slide level2">
-<h2>Prior scale &amp; estimation error (example)</h2>
+<section id="prior-scale-estimation-error-1" class="slide level2">
+<h2>Prior scale &amp; estimation error</h2>
 <p><img src="adaptive_eif_problem.png"></p>
 </section>
-<section id="return-to-yeast-example-3-vs-3-replicates" class="slide level2">
-<h2>Return to yeast example: 3 vs 3 replicates</h2>
+<section id="return-to-yeast-example" class="slide level2">
+<h2>Return to yeast example</h2>
+<h3 id="vs-3-replicates">3 vs 3 replicates</h3>
 </section>
 <section id="yeast-with-normal-prior" class="slide level2">
 <h2>Yeast with Normal prior</h2>
@@ -783,33 +802,25 @@ UNC-Chapel Hill</div></h2>
 <section id="error-and-concordance-for-various-methods" class="slide level2">
 <h2>Error and concordance for various methods</h2>
 </section>
-<section id="yeast-results-3-and-5-replicates-per-group" class="slide level2">
-<h2>Yeast results: 3 and 5 replicates per group</h2>
+<section id="yeast-n3-and-n5" class="slide level2">
+<h2>Yeast: n=3 and n=5</h2>
 <p><img width=750 src="yeast.png"></p>
 </section>
-<section id="simulation-5-and-10-replicates-per-group" class="slide level2">
-<h2>Simulation: 5 and 10 replicates per group</h2>
+<section id="simulation-n5-and-n10" class="slide level2">
+<h2>Simulation: n=5 and n=10</h2>
 <p><img width=750 src="sim_b.png"></p>
 </section>
-<section id="simulation-30-and-50-replicates-per-group" class="slide level2">
-<h2>Simulation: 30 and 50 replicates per group</h2>
+<section id="simulation-n30-and-n50" class="slide level2">
+<h2>Simulation: n=30 and n=50</h2>
 <p><img width=750 src="sim_largesize_b.png"></p>
 </section>
-<section id="problem-case-for-apeglm" class="slide level2">
-<h2>Problem case for apeglm</h2>
-</section>
-<section class="slide level2">
-
-<p><img src="index_files/figure-revealjs/apeglm-limit-1.png" width="672" /></p>
-<p><img src="index_files/figure-revealjs/apeglm-limit2-1.png" width="672" /></p>
-</section>
-<section id="what-else-have-we-been-working-on" class="slide level2">
-<h2>What else have we been working on</h2>
+<section id="what-else-are-we-doing" class="slide level2">
+<h2>What else are we doing</h2>
 <ul>
 <li><a href="https://bioconductor.org/packages/tximeta">tximeta</a> - automatic detection of gene provenance (<a href="https://bit.ly/tximeta">slides</a>)</li>
 <li><a href="https://bioconductor.org/packages/rnaseqDTU">rnaseqDTU</a> - workflow for differential transcript usage</li>
 <li>Propagation of uncertainty at transcript-level</li>
-<li>Multi-omics unsupervised benchmark (McCabe)</li>
+<li><a href="https://doi.org/10.1101/379115">Multi-omics unsupervised benchmark</a> (McCabe)</li>
 <li>Germline analysis in Carolina Breast Cancer Study (Bhattacharya)</li>
 </ul>
 </section>
@@ -871,6 +882,14 @@ res &lt;-<span class="st"> </span><span class="kw">lfcShrink</span>(dds, <span c
 </ul>
 <p><span class="math display">\[ \log(\delta_g) \sim f(\mu_g) + \varepsilon, \quad \varepsilon \sim t_\nu(0,\sigma^2) \]</span></p>
 <p>“<em>here we opt for a Student-t distribution as it leads to inference that is more robust to the presence of outlier genes</em>”</p>
+</section>
+<section id="problem-case-for-apeglm" class="slide level2">
+<h2>Problem case for apeglm</h2>
+</section>
+<section class="slide level2">
+
+<p><img src="index_files/figure-revealjs/apeglm-limit-1.png" width="672" /></p>
+<p><img src="index_files/figure-revealjs/apeglm-limit2-1.png" width="672" /></p>
 </section>
 <section class="slide level2">
 

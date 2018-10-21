@@ -1,14 +1,15 @@
 ---
 title: "Adaptive priors for estimating effect size with genomic data"
 author: |
-  | Michael Love
+  | <small>Michael Love
   | Dept. of Biostatistics
   | Dept. of Genetics
-  | UNC-Chapel Hill
+  | UNC-Chapel Hill</small>
 bibliography: library.bib
 csl: apa.csl
 output: 
   revealjs::revealjs_presentation:
+    theme: white
     highlight: tango
     center: true
     transition: "none"
@@ -43,19 +44,19 @@ knitr::opts_chunk$set(cache=TRUE,
 * Statistical method development
 * Collaborations: Genetics, Biology, CS, Statistics
 
-## Our starting point
+## We often begin with plots
 
-* In genomic data analysis, we often begin with plots
-* Crucial for high dimensional analysis:
-    - effect size over mean
-	- within-group variance over mean
-	- systematic variation (boxplots, PCA)
+Crucial for high dimensional analysis:
+
+* effect size over mean ("MA" plot)
+* SD over mean
+* systematic variation (boxplots, PCA)
 
 ## Gene expression
 
 * Many collaborations around gene expression:
 	- neurons (autism, schizophrenia) *
-	- adipose tissue (T2D) *
+	- adipose (T2D) *
 	- macrophage (arthritis) *
     - colon (IBD) * 
 	- breast tumor
@@ -66,7 +67,7 @@ knitr::opts_chunk$set(cache=TRUE,
 	
 \* also interested in chromatin accessibility or conformation
 
-## Often, interested in log fold change 
+## Log fold change 
 
 Expression of $G$ genes, 5 replicates in 2 groups:
 
@@ -104,7 +105,7 @@ $$ \beta_g \equiv \log_2 \left( \frac{\mu_{gY}}{\mu_{gX}} \right) $$
 * Simulation of over-dispersed count data 
 * 2500 "genes", 5 vs 5 replicates
 
-## Effect size over mean ("MA" or Bland-Altman)
+## Effect size over mean ("MA")
 
 ```{r}
 suppressPackageStartupMessages(library(DESeq2))
@@ -220,6 +221,7 @@ ggplot(dat, aes(x=true, y=Normal.prior, col=category)) +
 
 <div class="col">
 <br/>
+With prior:
 
 * Reduced variance
 * Genes can be ranked
@@ -228,10 +230,15 @@ ggplot(dat, aes(x=true, y=Normal.prior, col=category)) +
 </div>
 </div>
 
-## Look at real LFC distribution
+## Effect size estimation
+
+* Perhaps we can do better than pseudocount
+* Why bother? Just use p-values
+
+## A distribution of effect sizes
 
 * Highly replicated yeast dataset [@Schurch2016]
-* 42 vs 44 biological replicates
+* 42 vs 44 biological replicates!
 * $\Delta snf2$ mutant
     - Catalytic component of the SWI/SNF complex
     - Chromatin-remodeling 
@@ -253,7 +260,7 @@ ggplot(res.df, aes(log10mean, log2FoldChange, col=FDR.05)) +
   scale_color_manual(values=c("black", "red")) + big.text
 ```
 
-## LFC with 2x SE (1700 black, 5100 red)
+## LFC with 2x SE
 
 ```{r yeast-ma2, echo=FALSE, out.width=630, out.height=450}
 ggplot(res.df, aes(log10mean, log2FoldChange, col=FDR.05, ymin=ymin, ymax=ymax)) +
@@ -263,19 +270,36 @@ ggplot(res.df, aes(log10mean, log2FoldChange, col=FDR.05, ymin=ymin, ymax=ymax))
   scale_color_manual(values=c("black", "red")) + big.text
 ```
 
-\* Actually, $y=0$ not trivial to determine here
+(1700 black, 5100 red)
 
-## How the Normal prior is implemented 
+## Consider utility of p-values
 
-* Consider all of MLE coefficients, $\hat{\beta}_g$
-* Adapt prior to the spread of these
+* Null likely false for (nearly) all genes in this example
+* Ranking by prob under the null seems non-obvious
+* We can estimate the effect size for small or large *n*
+
+## Normal prior in DESeq2
+
+<div class="container">
+
+<div class="col">
+<img width=400 src="index_files/figure-revealjs/scatter-normal-1.png">
+</div>
+
+<div class="col">
+
+* MLE coefficients, $\hat{\beta}_g$
+* Adapt prior to these
+* <font color="red">Normal has thin tails</font>
+* Match Normal to upper 5% *weighted* quantile
 * Inverse weight by expected variance of log counts
-* Normal has thin tails
-* Pick a Normal to match the upper 5% *weighted* quantile
 
 [@Love2014]
 
-## Alternative adaptive priors with heavy tails
+</div>
+</div>
+
+## Other priors with heavy tails
 
 <img width=300 src="andean_cat.jpg">
 
@@ -291,21 +315,20 @@ ggplot(res.df, aes(log10mean, log2FoldChange, col=FDR.05, ymin=ymin, ymax=ymax))
 >     - set $\sigma_k$ grid based on min $\hat{s}_g$ and max $\hat{\beta}_g^2 - \hat{s}_g^2$
 >     - estimate $\pi_k$ using $\hat{\beta}_g$ and $\hat{s}_g$
 >     - $P(\hat{\beta}_g | \beta_g, \hat{s}_g) = N(\hat{\beta}_g; \beta_g, \hat{s}_g^2)$
->     - return the posterior mean, SD, FSR
+>     - return the posterior mean, SD
 > * apeglm: 
 >     - set the scale $S$ of Cauchy using $\hat{\beta}_g$ and $\hat{s}_g$
->     - shrink only one coefficient at a time
 >     - use data $Y_g$, parameters $\theta_g$, likelihood (NB, ZINB, etc.)
->     - return the posterior mode, SD, profile posterior intervals
+>     - return the posterior mode, SD
 
-## Connection to `bayesglm`
+## Connection to bayesglm
 
 * Uses a 2.5 scale Cauchy prior on non-constant coefficients
 * Posterior mode and SE via an approximate EM within IRLS
 
 [@Gelman2008]
 
-## Connection to `bayesglm`
+## Connection to bayesglm
 
 * "*want something better than the unstable estimates produced by the
   current default - maximum likelihood*" 
@@ -315,7 +338,7 @@ ggplot(res.df, aes(log10mean, log2FoldChange, col=FDR.05, ymin=ymin, ymax=ymax))
 
 [@Gelman2008]
 
-## Connection to `bayesglm`
+## Connection to bayesglm
 
 Cauchy can be modeled as a mixture of Normals:
 
@@ -329,7 +352,7 @@ $$ \sigma^2 \sim \textrm{Scale-inv-} \chi^2(\nu, S^2) $$
 
 [@Gelman2008]
 
-## `apeglm` implementation
+## apeglm implementation
 
 **A**pproximate **P**osterior **E**stimation for **GLM**
 
@@ -341,11 +364,9 @@ $$ \sigma^2 \sim \textrm{Scale-inv-} \chi^2(\nu, S^2) $$
 
 ---
 
-Solve for $A$ in the following [@EfronMorris]
+Solve for $A$ in equation of the  form [@EfronMorris]
 
-$A = \sum_{g=1}^G (\hat{\beta}_g^2 - e_g^2) I_g(A) \, / \, \sum_{g=1}^G I_g(A)$
-
-$I_g(a) \equiv 1/[2(a + e_g^2)^2]$
+$A = f(A, \hat{\beta}_g^2, e_g^2)$
 
 Motivated by the following hierarchical model:
 
@@ -353,8 +374,10 @@ $$ \hat{\beta}_g \sim N(\beta_g, e_g^2) $$
 
 $$ \beta_g \sim N(0, A) $$
 
+Two approximations to note:
+
 > 1. We plug in $\hat{s}_g^2$ for $e_g^2$
-> 2. We use $S = \sqrt{A}$ to scale a *Cauchy* not a *Normal* prior
+> 2. Estimate scale of a *Normal* then use a *Cauchy*
 
 ## False Sign Rate (FSR)
 
@@ -373,14 +396,18 @@ segments(2, 0, 2, dnorm(2), lwd=2)
 polygon(c(2,20:40/10,4),
         c(0,dnorm(20:40/10),0),
         col=rgb(1,0,0,.5))
+polygon(c(-2,-20:-40/10,-4),
+        c(0,dnorm(-20:-40/10),0),
+        col=rgb(1,0,0,.5), density=50)
 plot(s, .9*dnorm(s), type="l", ylim=c(0,.37), xlab="", ylab="", main="local fdr")
 lines(s, .9*dnorm(s) + .1*dnorm(s,2),col="blue")
 segments(2, 0, 2, .9*dnorm(2)+.1*dnorm(2,2), lwd=2, col="blue")
 segments(2, 0, 2, .9*dnorm(2), lwd=2)
 plot(s, dnorm(s,2), type="l", xlab="", ylab="", col="purple", main="local fsr")
 segments(0, 0, 0, dnorm(0,2), lwd=2)
-polygon(c(0,0:(-40)/10,-4),
-        c(0,dnorm(0:(-40)/10,2),0),
+segments(2, 0, 2, dnorm(2,2), lwd=2, col="purple", lty=3)
+polygon(c(0,0:-40/10,-4),
+        c(0,dnorm(0:-40/10,2),0),
         col=rgb(1,0,1,.5))
 ```
 
@@ -392,11 +419,13 @@ polygon(c(0,0:(-40)/10,-4),
 
 <img src="adaptive_eif.png">
 
-## Prior scale & estimation error (example)
+## Prior scale & estimation error
 
 <img src="adaptive_eif_problem.png">
 
-## Return to yeast example: 3 vs 3 replicates
+## Return to yeast example
+
+### 3 vs 3 replicates
 
 ## Yeast with Normal prior
 
@@ -464,69 +493,26 @@ ggplot(sub.df, aes(true, ashr.prior, col=type)) +
 
 ## Error and concordance for various methods
 
-## Yeast results: 3 and 5 replicates per group
+## Yeast: n=3 and n=5
 
 <img width=750 src="yeast.png">
 
-## Simulation: 5 and 10 replicates per group
+## Simulation: n=5 and n=10
 
 <img width=750 src="sim_b.png">
 
-## Simulation: 30 and 50 replicates per group
+## Simulation: n=30 and n=50
 
 <img width=750 src="sim_largesize_b.png">
 
-## Problem case for apeglm
-
----
-
-```{r echo=FALSE}
-m <- 4
-n <- 3200
-dmr <- function(x) 1/x + exp(rnorm(n,log(.05),1))
-set.seed(1)
-betaSD <- rep(c(0,1),c(3000,200))
-dds <- makeExampleDESeqDataSet(m=m, n=n, betaSD=betaSD,
-                               interceptMean=5, interceptSD=4,
-                               dispMeanRel=dmr)
-mcols(dds)$betaSD <- betaSD
-keep <- rowSums(counts(dds) >= 5) >= 3
-keep <- keep & rowMeans(counts(dds)) < 1e4
-dds <- dds[keep,]
-dds <- DESeq(dds, fitType="mean")
-apeglm <- lfcShrink(dds, coef=2, type="apeglm")$log2FoldChange
-ashr <- lfcShrink(dds, coef=2, type="ashr")$log2FoldChange
-dat <- data.frame(log10mean=rep(log10(mcols(dds)$baseMean),2),
-                  estimate=c(apeglm,ashr),
-                  method=rep(c("apeglm","ashr"),each=nrow(dds)),
-                  true=rep(mcols(dds)$trueBeta,2),
-                  category=factor(paste0("betaSD:",rep(mcols(dds)$betaSD,2))))
-```
-
-```{r apeglm-limit, echo=FALSE, fig.width=7, fig.height=3}
-ggplot(dat, aes(x=true, y=estimate, col=category)) +
-  geom_point(alpha=.3,size=2) +
-  geom_abline(slope=1, intercept=0, col="black") +
-  scale_color_manual(values=c("black", "blue")) + 
-  big.text + facet_wrap(~method) + ggtitle("apeglm limitation: n=2 vs 2, spike at 0")
-```
-
-```{r apeglm-limit2, echo=FALSE, fig.width=7, fig.height=3}
-ggplot(dat, aes(x=log10mean, y=estimate, col=category)) +
-  geom_point(alpha=.3,size=2) +
-  big.text + facet_wrap(~method) +
-  scale_color_manual(values=c("black", "blue")) + 
-  ggtitle("apeglm limitation: n=2 vs 2, spike at 0")
-```
-
-## What else have we been working on
+## What else are we doing
 
 * [tximeta](https://bioconductor.org/packages/tximeta) - automatic
   detection of gene provenance ([slides](https://bit.ly/tximeta))
 * [rnaseqDTU](https://bioconductor.org/packages/rnaseqDTU) - workflow
   for differential transcript usage
 * Propagation of uncertainty at transcript-level
-* Multi-omics unsupervised benchmark (McCabe)
+* [Multi-omics unsupervised benchmark](https://doi.org/10.1101/379115) (McCabe)
 * Germline analysis in Carolina Breast Cancer Study (Bhattacharya)
 
 ## Simplify statistical routines
@@ -589,6 +575,49 @@ $$ \log(\delta_g) \sim f(\mu_g) + \varepsilon, \quad \varepsilon \sim t_\nu(0,\s
 
 "*here we opt for a Student-t distribution as it leads to inference
 that is more robust to the presence of outlier genes*" 
+
+## Problem case for apeglm
+
+---
+
+```{r echo=FALSE}
+m <- 4
+n <- 3200
+dmr <- function(x) 1/x + exp(rnorm(n,log(.05),1))
+set.seed(1)
+betaSD <- rep(c(0,1),c(3000,200))
+dds <- makeExampleDESeqDataSet(m=m, n=n, betaSD=betaSD,
+                               interceptMean=5, interceptSD=4,
+                               dispMeanRel=dmr)
+mcols(dds)$betaSD <- betaSD
+keep <- rowSums(counts(dds) >= 5) >= 3
+keep <- keep & rowMeans(counts(dds)) < 1e4
+dds <- dds[keep,]
+dds <- DESeq(dds, fitType="mean")
+apeglm <- lfcShrink(dds, coef=2, type="apeglm")$log2FoldChange
+ashr <- lfcShrink(dds, coef=2, type="ashr")$log2FoldChange
+dat <- data.frame(log10mean=rep(log10(mcols(dds)$baseMean),2),
+                  estimate=c(apeglm,ashr),
+                  method=rep(c("apeglm","ashr"),each=nrow(dds)),
+                  true=rep(mcols(dds)$trueBeta,2),
+                  category=factor(paste0("betaSD:",rep(mcols(dds)$betaSD,2))))
+```
+
+```{r apeglm-limit, echo=FALSE, fig.width=7, fig.height=3}
+ggplot(dat, aes(x=true, y=estimate, col=category)) +
+  geom_point(alpha=.3,size=2) +
+  geom_abline(slope=1, intercept=0, col="black") +
+  scale_color_manual(values=c("black", "blue")) + 
+  big.text + facet_wrap(~method) + ggtitle("apeglm limitation: n=2 vs 2, spike at 0")
+```
+
+```{r apeglm-limit2, echo=FALSE, fig.width=7, fig.height=3}
+ggplot(dat, aes(x=log10mean, y=estimate, col=category)) +
+  geom_point(alpha=.3,size=2) +
+  big.text + facet_wrap(~method) +
+  scale_color_manual(values=c("black", "blue")) + 
+  ggtitle("apeglm limitation: n=2 vs 2, spike at 0")
+```
 
 ---
 
