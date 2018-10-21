@@ -112,7 +112,7 @@ suppressPackageStartupMessages(library(DESeq2))
 m <- 10
 n <- 2500
 dmr <- function(x) 4/x + exp(rnorm(n,log(.01),2))
-set.seed(1)
+set.seed(3)
 dds <- makeExampleDESeqDataSet(m=m, n=n, betaSD=.5,
                                interceptMean=5, interceptSD=4,
                                dispMeanRel=dmr)
