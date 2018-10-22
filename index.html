@@ -710,7 +710,7 @@ UNC-Chapel Hill</small></div></h2>
 <section id="connection-to-bayesglm" class="slide level2">
 <h2>Connection to bayesglm</h2>
 <ul>
-<li>Uses a 2.5 scale Cauchy prior on non-constant coefficients</li>
+<li>Fixed 2.5 scale Cauchy prior</li>
 <li>Posterior mode and SE via an approximate EM within IRLS</li>
 </ul>
 <p><span class="citation" data-cites="Gelman2008">(Gelman, Jakulin, Pittau, &amp; Su, 2008)</span></p>
@@ -723,27 +723,19 @@ UNC-Chapel Hill</small></div></h2>
 </ul>
 <p><span class="citation" data-cites="Gelman2008">(Gelman et al., 2008)</span></p>
 </section>
-<section id="connection-to-bayesglm-2" class="slide level2">
-<h2>Connection to bayesglm</h2>
-<p>Cauchy can be modeled as a mixture of Normals:</p>
-<p><span class="math display">\[ \beta \sim N(0, \sigma^2) \]</span></p>
-<p><span class="math display">\[ \sigma^2 \sim \textrm{Scale-inv-} \chi^2(\nu, S^2) \]</span></p>
-<ul>
-<li><span class="math inline">\(\nu=1\)</span> and <span class="math inline">\(S=2.5\)</span> are fixed</li>
-<li>Within IRLS, perform an EM step</li>
-<li>Treat <span class="math inline">\(\beta\)</span> as missing data, estimate <span class="math inline">\(\sigma\)</span></li>
-</ul>
-<p><span class="citation" data-cites="Gelman2008">(Gelman et al., 2008)</span></p>
-</section>
 <section id="apeglm-implementation" class="slide level2">
 <h2>apeglm implementation</h2>
 <p><strong>A</strong>pproximate <strong>P</strong>osterior <strong>E</strong>stimation for <strong>GLM</strong></p>
 <ul>
-<li>Prior fit to <span class="math inline">\(\hat{\beta}_g\)</span> and <span class="math inline">\(\hat{s}_g\)</span>, details on next slide</li>
-<li>Treat dispersion parameter as fixed</li>
-<li>C++ version of L-BFGS-B to obtain posterior mode [1]</li>
-<li><code>optim</code> to obtain Hessian for Laplace approximation [2]</li>
-<li>[1] takes &lt; 1 s, [2] takes ~3 s, over e.g. 10k genes</li>
+<li>Prior fit to <span class="math inline">\(\hat{\beta}_g\)</span> and <span class="math inline">\(\hat{s}_g\)</span></li>
+<li>C++ version of L-BFGS-B to obtain posterior mode
+<ul>
+<li>&lt;1 s for 10k genes</li>
+</ul></li>
+<li><code>optim</code> to obtain Hessian for Laplace approximation
+<ul>
+<li>~3 s</li>
+</ul></li>
 </ul>
 </section>
 <section class="slide level2">
@@ -798,21 +790,6 @@ UNC-Chapel Hill</small></div></h2>
 <section id="yeast-with-ashr" class="slide level2">
 <h2>Yeast with ashr</h2>
 <p><img src="index_files/figure-revealjs/yeast-ashr-1.png" width="768" /></p>
-</section>
-<section id="error-and-concordance-for-various-methods" class="slide level2">
-<h2>Error and concordance for various methods</h2>
-</section>
-<section id="yeast-n3-and-n5" class="slide level2">
-<h2>Yeast: n=3 and n=5</h2>
-<p><img width=750 src="yeast.png"></p>
-</section>
-<section id="simulation-n5-and-n10" class="slide level2">
-<h2>Simulation: n=5 and n=10</h2>
-<p><img width=750 src="sim_b.png"></p>
-</section>
-<section id="simulation-n30-and-n50" class="slide level2">
-<h2>Simulation: n=30 and n=50</h2>
-<p><img width=750 src="sim_largesize_b.png"></p>
 </section>
 <section id="what-else-are-we-doing" class="slide level2">
 <h2>What else are we doing</h2>
@@ -883,6 +860,18 @@ res &lt;-<span class="st"> </span><span class="kw">lfcShrink</span>(dds, <span c
 <p><span class="math display">\[ \log(\delta_g) \sim f(\mu_g) + \varepsilon, \quad \varepsilon \sim t_\nu(0,\sigma^2) \]</span></p>
 <p>“<em>here we opt for a Student-t distribution as it leads to inference that is more robust to the presence of outlier genes</em>”</p>
 </section>
+<section id="connection-to-bayesglm-2" class="slide level2">
+<h2>Connection to bayesglm</h2>
+<p>Cauchy can be modeled as a mixture of Normals:</p>
+<p><span class="math display">\[ \beta \sim N(0, \sigma^2) \]</span></p>
+<p><span class="math display">\[ \sigma^2 \sim \textrm{Scale-inv-} \chi^2(\nu, S^2) \]</span></p>
+<ul>
+<li><span class="math inline">\(\nu=1\)</span> and <span class="math inline">\(S=2.5\)</span> are fixed</li>
+<li>Within IRLS, perform an EM step</li>
+<li>Treat <span class="math inline">\(\beta\)</span> as missing data, estimate <span class="math inline">\(\sigma\)</span></li>
+</ul>
+<p><span class="citation" data-cites="Gelman2008">(Gelman et al., 2008)</span></p>
+</section>
 <section id="problem-case-for-apeglm" class="slide level2">
 <h2>Problem case for apeglm</h2>
 </section>
@@ -890,6 +879,22 @@ res &lt;-<span class="st"> </span><span class="kw">lfcShrink</span>(dds, <span c
 
 <p><img src="index_files/figure-revealjs/apeglm-limit-1.png" width="672" /></p>
 <p><img src="index_files/figure-revealjs/apeglm-limit2-1.png" width="672" /></p>
+</section>
+<section id="error-and-concordance-for-various-methods" class="slide level2">
+<h2>Error and concordance for various methods</h2>
+<h3 id="extra-slides-see-paper">Extra slides / see paper</h3>
+</section>
+<section id="yeast-n3-and-n5" class="slide level2">
+<h2>Yeast: n=3 and n=5</h2>
+<p><img width=750 src="yeast.png"></p>
+</section>
+<section id="simulation-n5-and-n10" class="slide level2">
+<h2>Simulation: n=5 and n=10</h2>
+<p><img width=750 src="sim_b.png"></p>
+</section>
+<section id="simulation-n30-and-n50" class="slide level2">
+<h2>Simulation: n=30 and n=50</h2>
+<p><img width=750 src="sim_largesize_b.png"></p>
 </section>
 <section class="slide level2">
 
